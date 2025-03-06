@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CurlGUI - API Testing Tool</title>
+    <title>Antiposta - API Testing Tool</title>
     <style>
         /* Reset and Base Styles */
         * {
@@ -624,25 +624,157 @@
                     return;
                 }
                 
-                // For demo purposes, just show a mock response
-                document.querySelector('.status').textContent = 'Status: 200 OK';
-                document.querySelector('.time').textContent = 'Time: 42ms';
-                document.querySelector('.size').textContent = 'Size: 1.2KB';
+                // Get headers from the headers editor
+                const headers = {};
+                document.querySelectorAll('#headers-list .key-value-row').forEach(row => {
+                    const key = row.querySelector('.key-input').value.trim();
+                    const value = row.querySelector('.value-input').value.trim();
+                    if (key) {
+                        headers[key] = value;
+                    }
+                });
                 
-                document.querySelector('.response-body pre').textContent = JSON.stringify({
-                    success: true,
-                    message: "This is a mock response",
+                // Get request body based on selected type
+                let body = null;
+                const bodyType = document.querySelector('.body-type').value;
+                
+                if (method !== 'GET' && method !== 'HEAD') {
+                    if (bodyType === 'json') {
+                        const jsonText = document.querySelector('.json-input').value.trim();
+                        if (jsonText) {
+                            try {
+                                body = JSON.parse(jsonText);
+                                headers['Content-Type'] = 'application/json';
+                            } catch (e) {
+                                alert('Invalid JSON: ' + e.message);
+                                return;
+                            }
+                        }
+                    } else if (bodyType === 'form') {
+                        const formData = new FormData();
+                        let hasData = false;
+                        
+                        document.querySelectorAll('#form-list .key-value-row').forEach(row => {
+                            const key = row.querySelector('.key-input').value.trim();
+                            const value = row.querySelector('.value-input').value.trim();
+                            if (key) {
+                                formData.append(key, value);
+                                hasData = true;
+                            }
+                        });
+                        
+                        if (hasData) {
+                            body = formData;
+                        }
+                    } else if (bodyType === 'text') {
+                        const textData = document.querySelector('.text-input').value.trim();
+                        if (textData) {
+                            body = textData;
+                            headers['Content-Type'] = 'text/plain';
+                        }
+                    }
+                }
+                
+                // Get URL parameters and append them to the URL
+                const params = new URLSearchParams();
+                let hasParams = false;
+                
+                document.querySelectorAll('#params-list .key-value-row').forEach(row => {
+                    const key = row.querySelector('.key-input').value.trim();
+                    const value = row.querySelector('.value-input').value.trim();
+                    if (key) {
+                        params.append(key, value);
+                        hasParams = true;
+                    }
+                });
+                
+                let finalUrl = url;
+                if (hasParams) {
+                    // Check if URL already has parameters
+                    finalUrl += (url.includes('?') ? '&' : '?') + params.toString();
+                }
+                
+                // Update UI to show loading state
+                document.querySelector('.status').textContent = 'Status: Loading...';
+                document.querySelector('.time').textContent = 'Time: -';
+                document.querySelector('.size').textContent = 'Size: -';
+                document.querySelector('.response-body pre').textContent = 'Loading...';
+                document.querySelector('.response-headers pre').textContent = 'Loading...';
+                
+                const startTime = Date.now();
+                
+                // Prepare fetch options
+                const fetchOptions = {
                     method: method,
-                    url: url,
-                    timestamp: new Date().toISOString()
-                }, null, 2);
+                    headers: headers,
+                    // Don't add body for GET and HEAD requests
+                    ...(method !== 'GET' && method !== 'HEAD' && body ? { body: bodyType === 'json' ? JSON.stringify(body) : body } : {})
+                };
                 
-                document.querySelector('.response-headers pre').textContent = 
-                    'content-type: application/json\n' +
-                    'date: ' + new Date().toUTCString() + '\n' +
-                    'server: MockServer/1.0\n' +
-                    'content-length: 120';
+                // Make the actual HTTP request
+                fetch(finalUrl, fetchOptions)
+                    .then(response => {
+                        const endTime = Date.now();
+                        const responseTime = endTime - startTime;
+                        
+                        // Update status and time
+                        document.querySelector('.status').textContent = `Status: ${response.status} ${response.statusText}`;
+                        document.querySelector('.time').textContent = `Time: ${responseTime}ms`;
+                        
+                        // Clone the response so we can use it twice
+                        const responseClone = response.clone();
+                        
+                        // Get and display response headers
+                        const headerText = Array.from(response.headers.entries())
+                            .map(([key, value]) => `${key}: ${value}`)
+                            .join('\n');
+                        
+                        document.querySelector('.response-headers pre').textContent = headerText;
+                        
+                        // Try to parse response as JSON first
+                        return responseClone.text().then(text => {
+                            let formattedResponse = text;
+                            let responseSize = new Blob([text]).size;
+                            
+                            // Try to format as JSON if it's JSON
+                            try {
+                                if (response.headers.get('content-type')?.includes('application/json')) {
+                                    formattedResponse = JSON.stringify(JSON.parse(text), null, 2);
+                                }
+                            } catch (e) {
+                                // If it's not valid JSON, just show as text
+                                console.log('Response is not valid JSON:', e);
+                            }
+                            
+                            // Update size and response body
+                            document.querySelector('.size').textContent = `Size: ${formatBytes(responseSize)}`;
+                            document.querySelector('.response-body pre').textContent = formattedResponse;
+                        });
+                    })
+                    .catch(error => {
+                        const endTime = Date.now();
+                        const responseTime = endTime - startTime;
+                        
+                        document.querySelector('.status').textContent = 'Status: Error';
+                        document.querySelector('.time').textContent = `Time: ${responseTime}ms`;
+                        document.querySelector('.size').textContent = 'Size: -';
+                        document.querySelector('.response-body pre').textContent = `Error: ${error.message}`;
+                        document.querySelector('.response-headers pre').textContent = '';
+                    });
             });
+            
+            // Helper function to format bytes
+            function formatBytes(bytes, decimals = 2) {
+                if (bytes === 0) return '0 Bytes';
+                
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            }
         });
     </script>
 </body>

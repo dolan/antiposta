@@ -1,6 +1,6 @@
-# CurlGUI - API Testing Tool
+# Antiposta - API Testing Tool
 
-CurlGUI is a lightweight, open-source API testing tool built around cURL functionality. It provides a modern, intuitive interface for testing APIs while maintaining complete local control over your data.
+Antiposta is a lightweight, open-source API testing tool built around cURL functionality. It provides a modern, intuitive interface for testing APIs while maintaining complete local control over your data.
 
 ## Features
 
@@ -17,8 +17,8 @@ CurlGUI is a lightweight, open-source API testing tool built around cURL functio
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/curlgui.git
-cd curlgui
+git clone https://github.com/dolan/antiposta.git
+cd antiposta 
 ```
 
 2. Open the application:
@@ -134,4 +134,104 @@ If you encounter any issues or have suggestions:
 
 - Built with vanilla JavaScript, HTML, and CSS
 - Inspired by popular API testing tools while focusing on privacy and local control
-- Icons provided by [Feather Icons](https://feathericons.com/) 
+- Icons provided by [Feather Icons](https://feathericons.com/)
+
+# Antiposta Test Server
+
+This is a simple Python HTTP server designed to test the Antiposta API testing tool. The server echoes back information about the request and responds with the appropriate content type based on the request.
+
+## Features
+
+- Supports all HTTP methods (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)
+- Content negotiation based on Accept header or request Content-Type
+- Responds with appropriate format (JSON, HTML, XML, or plain text)
+- CORS enabled for testing from any origin
+- Echoes back all request details (headers, parameters, body, etc.)
+- Handles different body formats (JSON, form data, XML, plain text)
+
+## Requirements
+
+- Python 3.6 or higher
+
+## Usage
+
+1. Start the server:
+
+```bash
+python test_server.py [port]
+```
+
+The default port is 8000 if not specified.
+
+2. Use Antiposta to send requests to the server:
+
+```
+http://localhost:8000/any/path/you/want
+```
+
+## Testing Different Content Types
+
+### JSON
+
+Send a request with Content-Type: application/json or Accept: application/json header to get a JSON response.
+
+Example in Antiposta:
+- Set the URL to: http://localhost:8000/api/test
+- Add a header: Content-Type: application/json
+- Set the body type to JSON and add some JSON content:
+```json
+{
+  "name": "Test User",
+  "email": "test@example.com"
+}
+```
+
+### HTML
+
+Send a request with Accept: text/html header to get an HTML response.
+
+Example in Antiposta:
+- Set the URL to: http://localhost:8000/page
+- Add a header: Accept: text/html
+
+### XML
+
+Send a request with Content-Type: application/xml or Accept: application/xml header to get an XML response.
+
+Example in Antiposta:
+- Set the URL to: http://localhost:8000/api/xml
+- Add a header: Accept: application/xml
+
+### Form Data
+
+Send a request with Content-Type: application/x-www-form-urlencoded or multipart/form-data to test form submissions.
+
+Example in Antiposta:
+- Set the URL to: http://localhost:8000/submit-form
+- Set the body type to Form Data
+- Add key-value pairs for your form fields
+
+## Query Parameters
+
+You can add query parameters to test URL parameter handling:
+
+Example:
+```
+http://localhost:8000/search?q=test&page=1
+```
+
+## Response
+
+The server will respond with details about your request, including:
+
+- HTTP method used
+- Request path
+- HTTP version
+- All request headers
+- Query parameters
+- Request body (if any)
+- Client IP address
+- Timestamp
+- Server name
+
+This makes it easy to verify that your Antiposta client is correctly sending the request as intended. 
