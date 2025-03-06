@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CurlGUI - API Testing Tool</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Dark Theme (Fixed) */
+        :root {
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #2d2d2d;
+            --panel-bg: #2d2d2d;
+            --input-bg: #3d3d3d;
+            --text-color: #ffffff;
+            --border-color: #404040;
+            --accent-color: #64b5f6;
+            --accent-hover: #42a5f5;
+            --button-bg: #64b5f6;
+            --button-hover: #42a5f5;
+            --button-text: #ffffff;
+            --error-color: #ef5350;
+            --success-color: #66bb6a;
+            --disabled-color: #666666;
+            --hover-color: #3d3d3d;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+            color: var(--text-color);
+        }
+
+        /* Base Layout */
+        .app-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            grid-template-rows: 1fr auto;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .collections-panel,
+        .history-panel {
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .collections-panel h2,
+        .history-panel h2 {
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Request Panel */
+        .request-panel {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 1rem;
+            gap: 1rem;
+            background: var(--panel-bg);
+        }
+
+        /* Request URL Bar */
+        .request-url-bar {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        .http-method {
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.5rem;
+            min-width: 100px;
+        }
+
+        .request-url {
+            flex: 1;
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.5rem;
+        }
+
+        .send-request {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+
+        .send-request:hover {
+            background: var(--button-hover);
+        }
+
+        /* Tabs */
+        .request-tabs {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .tab-headers {
+            display: flex;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn:hover {
+            background: var(--hover-color);
+        }
+
+        .tab-btn.active {
+            border-bottom: 2px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .tab-content {
+            flex: 1;
+            overflow: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-pane {
+            display: none;
+            height: 100%;
+        }
+
+        .tab-pane.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Body Tab Specific */
+        .body-tab {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .body-tab.active {
+            display: flex;
+        }
+
+        .body-type-selector {
+            margin-bottom: 1rem;
+        }
+
+        .body-type {
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.5rem;
+            width: 200px;
+        }
+
+        /* Key Value Editor */
+        .key-value-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .key-value-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .key-value-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .key-input, 
+        .value-input {
+            flex: 1;
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.5rem;
+        }
+
+        .delete-row-btn {
+            background: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .add-row-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem;
+            cursor: pointer;
+            align-self: flex-start;
+        }
+
+        .add-row-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Body Editors */
+        .body-editors {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            margin-top: 1rem;
+        }
+
+        .body-editor {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .json-input, 
+        .text-input {
+            flex: 1;
+            min-height: 150px; /* Approximately 4 lines of text */
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.5rem;
+            font-family: monospace;
+            resize: vertical;
+            overflow: auto;
+        }
+
+        .json-error {
+            color: var(--error-color);
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Response Container */
+        .response-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .response-header {
+            display: flex;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .response-tabs {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Environment Bar */
+        .environment-bar {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        #environment-selector {
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.5rem;
+        }
+
+        button {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: var(--button-hover);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="collections-panel">
+                <h2>Collections</h2>
+                <div id="collections-tree"></div>
+            </div>
+            <div class="history-panel">
+                <h2>History</h2>
+                <div id="request-history"></div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="request-panel">
+                <div class="request-url-bar">
+                    <select class="http-method">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                        <option value="PATCH">PATCH</option>
+                        <option value="HEAD">HEAD</option>
+                        <option value="OPTIONS">OPTIONS</option>
+                    </select>
+                    <input type="text" class="request-url" placeholder="Enter request URL">
+                    <button class="send-request">Send</button>
+                </div>
+
+                <div class="request-tabs">
+                    <div class="tab-headers">
+                        <button class="tab-btn active" data-tab="headers">Headers</button>
+                        <button class="tab-btn" data-tab="params">Params</button>
+                        <button class="tab-btn" data-tab="body">Body</button>
+                        <button class="tab-btn" data-tab="auth">Auth</button>
+                    </div>
+                    <div class="tab-content">
+                        <div class="headers-tab tab-pane active">
+                            <div class="key-value-editor" id="headers-editor">
+                                <div class="key-value-list" id="headers-list">
+                                    <div class="key-value-row">
+                                        <input type="text" class="key-input" placeholder="Key">
+                                        <input type="text" class="value-input" placeholder="Value">
+                                        <button class="delete-row-btn" title="Remove row">×</button>
+                                    </div>
+                                </div>
+                                <button class="add-row-btn" id="add-header-btn">Add Header</button>
+                            </div>
+                        </div>
+                        <div class="params-tab tab-pane">
+                            <div class="key-value-editor" id="params-editor">
+                                <div class="key-value-list" id="params-list">
+                                    <div class="key-value-row">
+                                        <input type="text" class="key-input" placeholder="Key">
+                                        <input type="text" class="value-input" placeholder="Value">
+                                        <button class="delete-row-btn" title="Remove row">×</button>
+                                    </div>
+                                </div>
+                                <button class="add-row-btn" id="add-param-btn">Add Parameter</button>
+                            </div>
+                        </div>
+                        <div class="body-tab tab-pane">
+                            <div class="body-type-selector">
+                                <select class="body-type">
+                                    <option value="none">None</option>
+                                    <option value="json">JSON</option>
+                                    <option value="form">Form Data</option>
+                                    <option value="text">Raw Text</option>
+                                </select>
+                            </div>
+                            <div class="body-editors">
+                                <div class="json-editor body-editor" style="display: none;">
+                                    <textarea class="json-input" placeholder="Enter JSON data"></textarea>
+                                    <div class="json-error"></div>
+                                </div>
+                                <div class="form-editor body-editor" style="display: none;">
+                                    <div class="key-value-editor" id="form-editor">
+                                        <div class="key-value-list" id="form-list">
+                                            <div class="key-value-row">
+                                                <input type="text" class="key-input" placeholder="Key">
+                                                <input type="text" class="value-input" placeholder="Value">
+                                                <button class="delete-row-btn" title="Remove row">×</button>
+                                            </div>
+                                        </div>
+                                        <button class="add-row-btn" id="add-form-btn">Add Form Field</button>
+                                    </div>
+                                </div>
+                                <div class="text-editor body-editor" style="display: none;">
+                                    <textarea class="text-input" placeholder="Enter raw text"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="auth-tab tab-pane">
+                            <!-- Auth content will be implemented later -->
+                            <p>Authentication options will be available here.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="response-container">
+                    <div class="response-header">
+                        <div class="status">Status: -</div>
+                        <div class="time">Time: -</div>
+                        <div class="size">Size: -</div>
+                    </div>
+                    <div class="response-tabs">
+                        <div class="tab-headers">
+                            <button class="tab-btn active" data-tab="response">Response</button>
+                            <button class="tab-btn" data-tab="headers">Headers</button>
+                        </div>
+                        <div class="tab-content">
+                            <div class="response-body tab-pane active">
+                                <pre>Response will appear here</pre>
+                            </div>
+                            <div class="response-headers tab-pane">
+                                <pre>Response headers will appear here</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Environment Selector -->
+        <div class="environment-bar">
+            <select id="environment-selector">
+                <option value="">No Environment</option>
+            </select>
+            <button id="manage-env">Manage Environments</button>
+            <button id="split-view-toggle">Toggle Split View</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            document.querySelectorAll('.tab-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Get the parent tab headers
+                    const tabHeaders = this.closest('.tab-headers');
+                    // Get the tab content container
+                    const tabContent = tabHeaders.nextElementSibling;
+                    // Get the tab to show
+                    const tabToShow = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all buttons in this tab group
+                    tabHeaders.querySelectorAll('.tab-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Hide all tab panes in this tab group
+                    tabContent.querySelectorAll('.tab-pane').forEach(pane => {
+                        pane.classList.remove('active');
+                    });
+                    
+                    // Show the selected tab pane
+                    const selectedPane = tabContent.querySelector(`.${tabToShow}-tab`);
+                    if (selectedPane) {
+                        selectedPane.classList.add('active');
+                    }
+                });
+            });
+
+            // Key-value editor functionality
+            function setupKeyValueEditor(listId, addBtnId) {
+                const list = document.getElementById(listId);
+                const addBtn = document.getElementById(addBtnId);
+                
+                // Add row button click handler
+                addBtn.addEventListener('click', function() {
+                    addKeyValueRow(list);
+                });
+                
+                // Setup delete handlers for existing rows
+                list.querySelectorAll('.delete-row-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        deleteKeyValueRow(this.closest('.key-value-row'), list);
+                    });
+                });
+            }
+            
+            function addKeyValueRow(list) {
+                const newRow = document.createElement('div');
+                newRow.className = 'key-value-row';
+                newRow.innerHTML = `
+                    <input type="text" class="key-input" placeholder="Key">
+                    <input type="text" class="value-input" placeholder="Value">
+                    <button class="delete-row-btn" title="Remove row">×</button>
+                `;
+                
+                // Add delete handler
+                newRow.querySelector('.delete-row-btn').addEventListener('click', function() {
+                    deleteKeyValueRow(newRow, list);
+                });
+                
+                // Add to the list
+                list.appendChild(newRow);
+                
+                // Focus the key input
+                newRow.querySelector('.key-input').focus();
+            }
+            
+            function deleteKeyValueRow(row, list) {
+                // Don't delete if it's the last row
+                if (list.querySelectorAll('.key-value-row').length <= 1) {
+                    // Clear the inputs instead
+                    row.querySelectorAll('input').forEach(input => input.value = '');
+                    return;
+                }
+                
+                row.remove();
+            }
+            
+            // Setup all key-value editors
+            setupKeyValueEditor('headers-list', 'add-header-btn');
+            setupKeyValueEditor('params-list', 'add-param-btn');
+            setupKeyValueEditor('form-list', 'add-form-btn');
+            
+            // Body type selector
+            const bodyTypeSelector = document.querySelector('.body-type');
+            const bodyEditors = document.querySelectorAll('.body-editor');
+            
+            bodyTypeSelector.addEventListener('change', function() {
+                const selectedType = this.value;
+                
+                // Hide all editors
+                bodyEditors.forEach(editor => {
+                    editor.style.display = 'none';
+                });
+                
+                // Show the selected editor
+                if (selectedType !== 'none') {
+                    const editorToShow = document.querySelector(`.${selectedType}-editor`);
+                    if (editorToShow) {
+                        editorToShow.style.display = 'flex';
+                    }
+                }
+            });
+            
+            // JSON editor formatting
+            const jsonInput = document.querySelector('.json-input');
+            const jsonError = document.querySelector('.json-error');
+            
+            jsonInput.addEventListener('blur', function() {
+                if (this.value.trim() === '') {
+                    jsonError.textContent = '';
+                    return;
+                }
+                
+                try {
+                    const parsed = JSON.parse(this.value);
+                    this.value = JSON.stringify(parsed, null, 2);
+                    jsonError.textContent = '';
+                } catch (e) {
+                    jsonError.textContent = 'Invalid JSON: ' + e.message;
+                }
+            });
+            
+            // Send request button
+            document.querySelector('.send-request').addEventListener('click', function() {
+                const method = document.querySelector('.http-method').value;
+                const url = document.querySelector('.request-url').value;
+                
+                if (!url) {
+                    alert('Please enter a URL');
+                    return;
+                }
+                
+                // For demo purposes, just show a mock response
+                document.querySelector('.status').textContent = 'Status: 200 OK';
+                document.querySelector('.time').textContent = 'Time: 42ms';
+                document.querySelector('.size').textContent = 'Size: 1.2KB';
+                
+                document.querySelector('.response-body pre').textContent = JSON.stringify({
+                    success: true,
+                    message: "This is a mock response",
+                    method: method,
+                    url: url,
+                    timestamp: new Date().toISOString()
+                }, null, 2);
+                
+                document.querySelector('.response-headers pre').textContent = 
+                    'content-type: application/json\n' +
+                    'date: ' + new Date().toUTCString() + '\n' +
+                    'server: MockServer/1.0\n' +
+                    'content-length: 120';
+            });
+        });
+    </script>
+</body>
+</html> 
