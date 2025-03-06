@@ -6,12 +6,14 @@ Antiposta is a lightweight, open-source API testing tool built around cURL funct
 
 - 🔒 **Local-First**: All data stored locally - no cloud sync, no login required
 - 📑 **Multi-Tab Interface**: Work with multiple requests simultaneously
-- 🌓 **Dark/Light Theme**: Choose your preferred visual theme
 - 📋 **Request Management**: Full support for all HTTP methods
 - 🗂️ **Collections**: Organize your requests into collections
 - 🔄 **Environment Variables**: Switch between different environments easily
 - 📱 **Responsive Design**: Works on desktop and tablet devices
 - ⌨️ **Keyboard Shortcuts**: Efficient workflow with keyboard controls
+
+## No need to install anything, just run it
+Use it on [Github Pages](https://dolan.github.io/antiposta/index.html)
 
 ## Getting Started
 
@@ -21,13 +23,8 @@ git clone https://github.com/dolan/antiposta.git
 cd antiposta 
 ```
 
-2. Open the application:
+2. The whole project is one file:
    - Simply open `index.html` in your web browser
-   - Or serve it using a local server:
-     ```bash
-     python -m http.server 8000
-     # Then visit http://localhost:8000
-     ```
 
 ## Using the Application
 
