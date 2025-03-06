@@ -5,9 +5,7 @@ Antiposta is a lightweight, open-source API testing tool built around cURL funct
 ## Features
 
 - 🔒 **Local-First**: All data stored locally - no cloud sync, no login required
-- 📑 **Multi-Tab Interface**: Work with multiple requests simultaneously
 - 📋 **Request Management**: Full support for all HTTP methods
-- 🗂️ **Collections**: Organize your requests into collections
 - 🔄 **Environment Variables**: Switch between different environments easily
 - 📱 **Responsive Design**: Works on desktop and tablet devices
 - ⌨️ **Keyboard Shortcuts**: Efficient workflow with keyboard controls

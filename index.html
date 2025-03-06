@@ -363,6 +363,16 @@
                 <h2>History</h2>
                 <div id="request-history"></div>
             </div>
+            <div class="help-panel" style="margin-top: auto; padding: 1rem; border-top: 1px solid var(--border-color);">
+                <button id="help-button" aria-label="Help" title="Show Help" style="display: flex; align-items: center; gap: 8px; background: none; border: none; color: var(--text-color); cursor: pointer; padding: 8px; border-radius: 4px; width: 100%; justify-content: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 16px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <span>Help</span>
+                </button>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -486,8 +496,771 @@
         </div>
     </div>
 
+    <!-- Environment Management Modal -->
+    <div id="env-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000;">
+        <div style="position: relative; width: 80%; max-width: 800px; margin: 50px auto; background-color: var(--panel-bg); border-radius: 8px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <button id="close-modal" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-color); font-size: 20px; cursor: pointer;">×</button>
+            
+            <h2 style="margin-bottom: 20px; color: var(--text-color);">Manage Environments</h2>
+            
+            <div style="display: flex; gap: 20px; height: 400px;">
+                <!-- Environment List -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                    <h3 style="margin-bottom: 10px; color: var(--text-color);">Environments</h3>
+                    <div id="env-list" style="flex: 1; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; padding: 10px;">
+                        <!-- Environment items will be added here -->
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="new-env-name" placeholder="New environment name" style="flex: 1; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 8px;">
+                        <button id="add-env-btn" style="background: var(--accent-color); color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer;">Add</button>
+                    </div>
+                </div>
+                
+                <!-- Environment Variables -->
+                <div style="flex: 2; display: flex; flex-direction: column;">
+                    <h3 id="current-env-name" style="margin-bottom: 10px; color: var(--text-color);">Variables</h3>
+                    <div id="env-variables" style="flex: 1; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; padding: 10px;">
+                        <div class="key-value-list" id="variables-list">
+                            <!-- Variable rows will be added here -->
+                        </div>
+                        <button class="add-row-btn" id="add-variable-btn" style="margin-top: 10px; background: var(--accent-color); color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer;">Add Variable</button>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; margin-top: 10px; gap: 10px;">
+                        <button id="delete-env-btn" style="background: var(--error-color); color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer;">Delete Environment</button>
+                        <button id="save-env-btn" style="background: var(--success-color); color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer;">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Overlay -->
+    <div id="help-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000;">
+        <div id="help-container" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 800px; max-height: 80vh; background-color: var(--panel-bg); border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                <h2 id="help-title" style="margin: 0; color: var(--text-color);">Help</h2>
+                <button id="close-help" style="background: none; border: none; color: var(--text-color); font-size: 20px; cursor: pointer;">×</button>
+            </div>
+            <div style="display: flex; height: 100%;">
+                <div style="width: 200px; background-color: var(--bg-secondary); border-right: 1px solid var(--border-color); padding: 1rem; overflow-y: auto;">
+                    <h3 style="margin-top: 0; color: var(--text-color);">Topics</h3>
+                    <ul id="help-topics" style="list-style: none; padding: 0; margin: 0;">
+                        <li><a href="#general" class="help-topic-link" data-topic="general" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">General</a></li>
+                        <li><a href="#request-url" class="help-topic-link" data-topic="request-url" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Request URL</a></li>
+                        <li><a href="#headers" class="help-topic-link" data-topic="headers" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Headers</a></li>
+                        <li><a href="#params" class="help-topic-link" data-topic="params" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Parameters</a></li>
+                        <li><a href="#body" class="help-topic-link" data-topic="body" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Request Body</a></li>
+                        <li><a href="#auth" class="help-topic-link" data-topic="auth" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Authentication</a></li>
+                        <li><a href="#response" class="help-topic-link" data-topic="response" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Response</a></li>
+                        <li><a href="#environments" class="help-topic-link" data-topic="environments" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Environments</a></li>
+                    </ul>
+                </div>
+                <div id="help-content" style="flex: 1; padding: 1rem; overflow-y: auto;">
+                    <!-- Help content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Content Templates -->
+    <template id="help-general">
+        <h2>Welcome to Antiposta</h2>
+        <p>Antiposta is a lightweight API testing tool that runs entirely in your browser. No data is sent to any server unless you explicitly make an API request.</p>
+        
+        <h3>Basic Usage</h3>
+        <ol>
+            <li>Enter a URL in the request URL field</li>
+            <li>Select the HTTP method (GET, POST, etc.)</li>
+            <li>Configure headers, parameters, or body if needed</li>
+            <li>Click the Send button to make the request</li>
+            <li>View the response below</li>
+        </ol>
+        
+        <h3>Key Features</h3>
+        <ul>
+            <li>Make HTTP requests with different methods</li>
+            <li>Set custom headers</li>
+            <li>Add URL parameters</li>
+            <li>Send different types of request bodies (JSON, form data, text)</li>
+            <li>View formatted responses</li>
+            <li>Use environments to store and reuse variables</li>
+        </ul>
+        
+        <p>Click on a topic in the sidebar to learn more about specific features.</p>
+    </template>
+
+    <template id="help-request-url">
+        <h2>Request URL</h2>
+        <p>The request URL is the address of the API endpoint you want to call.</p>
+        
+        <h3>HTTP Methods</h3>
+        <p>Select the appropriate HTTP method for your request:</p>
+        <ul>
+            <li><strong>GET</strong>: Retrieve data from the server</li>
+            <li><strong>POST</strong>: Send data to create a resource</li>
+            <li><strong>PUT</strong>: Update an existing resource</li>
+            <li><strong>DELETE</strong>: Remove a resource</li>
+            <li><strong>PATCH</strong>: Partially update a resource</li>
+            <li><strong>HEAD</strong>: Same as GET but returns only headers</li>
+            <li><strong>OPTIONS</strong>: Get supported methods for a resource</li>
+        </ul>
+        
+        <h3>Using Environment Variables</h3>
+        <p>You can use environment variables in your URL with the <code>{{variableName}}</code> syntax.</p>
+        <p>Example: <code>https://{{baseUrl}}/api/users</code></p>
+        
+        <p>See the <a href="#environments" class="help-topic-link" data-topic="environments">Environments</a> section for more details.</p>
+    </template>
+
+    <template id="help-headers">
+        <h2>Headers</h2>
+        <p>HTTP headers let you pass additional information with your request.</p>
+        
+        <h3>Common Headers</h3>
+        <ul>
+            <li><strong>Content-Type</strong>: Specifies the format of the request body (e.g., <code>application/json</code>)</li>
+            <li><strong>Accept</strong>: Indicates what content types the client can process (e.g., <code>application/json</code>)</li>
+            <li><strong>Authorization</strong>: Contains credentials for authenticating the client</li>
+            <li><strong>User-Agent</strong>: Identifies the client making the request</li>
+        </ul>
+        
+        <h3>Adding Headers</h3>
+        <ol>
+            <li>Click the "Add Header" button</li>
+            <li>Enter the header name in the Key field</li>
+            <li>Enter the header value in the Value field</li>
+        </ol>
+        
+        <h3>Using Environment Variables</h3>
+        <p>You can use environment variables in headers with the <code>{{variableName}}</code> syntax.</p>
+        <p>Example: <code>Authorization: Bearer {{accessToken}}</code></p>
+    </template>
+
+    <template id="help-params">
+        <h2>Parameters</h2>
+        <p>URL parameters are appended to the URL as a query string.</p>
+        
+        <h3>Adding Parameters</h3>
+        <ol>
+            <li>Click the "Add Parameter" button</li>
+            <li>Enter the parameter name in the Key field</li>
+            <li>Enter the parameter value in the Value field</li>
+        </ol>
+        
+        <p>Parameters will be automatically appended to your URL when you send the request.</p>
+        <p>Example: If your URL is <code>https://api.example.com/users</code> and you add a parameter <code>page=2</code>, the final URL will be <code>https://api.example.com/users?page=2</code></p>
+        
+        <h3>Using Environment Variables</h3>
+        <p>You can use environment variables in parameters with the <code>{{variableName}}</code> syntax.</p>
+        <p>Example: <code>user_id: {{userId}}</code></p>
+    </template>
+
+    <template id="help-body">
+        <h2>Request Body</h2>
+        <p>The request body contains data you want to send to the server. It's typically used with POST, PUT, and PATCH requests.</p>
+        
+        <h3>Body Types</h3>
+        <ul>
+            <li><strong>None</strong>: No body is sent with the request</li>
+            <li><strong>JSON</strong>: Send data in JSON format</li>
+            <li><strong>Form Data</strong>: Send data as form fields</li>
+            <li><strong>Raw Text</strong>: Send plain text data</li>
+        </ul>
+        
+        <h3>JSON</h3>
+        <p>For JSON bodies, enter valid JSON in the editor. The editor will automatically format your JSON when you click outside the text area.</p>
+        <p>Example:</p>
+        <pre>{
+  "name": "John Doe",
+  "email": "john@example.com"
+}</pre>
+        
+        <h3>Form Data</h3>
+        <p>For form data, add key-value pairs that will be sent as <code>application/x-www-form-urlencoded</code> or <code>multipart/form-data</code>.</p>
+        
+        <h3>Raw Text</h3>
+        <p>For raw text, simply enter the text you want to send. This is useful for custom formats or plain text.</p>
+        
+        <h3>Using Environment Variables</h3>
+        <p>You can use environment variables in the request body with the <code>{{variableName}}</code> syntax.</p>
+    </template>
+
+    <template id="help-auth">
+        <h2>Authentication</h2>
+        <p>Authentication allows you to identify yourself to the API.</p>
+        
+        <p>This feature will be implemented in a future update.</p>
+        
+        <h3>Common Authentication Methods</h3>
+        <ul>
+            <li><strong>Basic Auth</strong>: Username and password encoded in Base64</li>
+            <li><strong>Bearer Token</strong>: JWT or OAuth token sent in the Authorization header</li>
+            <li><strong>API Key</strong>: A key sent in headers, query parameters, or cookies</li>
+            <li><strong>OAuth 2.0</strong>: Token-based authentication with various flows</li>
+        </ul>
+        
+        <h3>Using Environment Variables</h3>
+        <p>It's recommended to store authentication credentials as environment variables for security and reusability.</p>
+        <p>Example: <code>Authorization: Bearer {{accessToken}}</code></p>
+    </template>
+
+    <template id="help-response">
+        <h2>Response</h2>
+        <p>The response section shows the result of your API request.</p>
+        
+        <h3>Response Information</h3>
+        <ul>
+            <li><strong>Status</strong>: The HTTP status code and text (e.g., 200 OK, 404 Not Found)</li>
+            <li><strong>Time</strong>: How long the request took to complete</li>
+            <li><strong>Size</strong>: The size of the response body</li>
+        </ul>
+        
+        <h3>Response Tabs</h3>
+        <ul>
+            <li><strong>Response</strong>: Shows the response body. JSON responses are automatically formatted.</li>
+            <li><strong>Headers</strong>: Shows the response headers returned by the server.</li>
+        </ul>
+        
+        <h3>Status Codes</h3>
+        <p>Common HTTP status codes:</p>
+        <ul>
+            <li><strong>2xx</strong>: Success (200 OK, 201 Created, 204 No Content)</li>
+            <li><strong>3xx</strong>: Redirection (301 Moved Permanently, 302 Found)</li>
+            <li><strong>4xx</strong>: Client Error (400 Bad Request, 401 Unauthorized, 404 Not Found)</li>
+            <li><strong>5xx</strong>: Server Error (500 Internal Server Error, 503 Service Unavailable)</li>
+        </ul>
+    </template>
+
+    <template id="help-environments">
+        <h2>Environments</h2>
+        <p>Environments allow you to store variables that can be reused across requests.</p>
+        
+        <h3>Creating an Environment</h3>
+        <ol>
+            <li>Click the "Manage Environments" button at the bottom of the screen</li>
+            <li>Enter a name for your environment and click "Add"</li>
+            <li>Select the environment from the list</li>
+            <li>Add variables with their values</li>
+            <li>Click "Save Changes"</li>
+        </ol>
+        
+        <h3>Using Environment Variables</h3>
+        <p>You can use environment variables in your requests with the <code>{{variableName}}</code> syntax.</p>
+        <p>Examples:</p>
+        <ul>
+            <li>URL: <code>https://{{baseUrl}}/api/users</code></li>
+            <li>Headers: <code>Authorization: Bearer {{token}}</code></li>
+            <li>Body: <code>{"userId": "{{userId}}"}</code></li>
+        </ul>
+        
+        <h3>Switching Environments</h3>
+        <p>Use the environment selector at the bottom of the screen to switch between environments.</p>
+        
+        <h3>Use Cases</h3>
+        <ul>
+            <li>Switching between development, staging, and production APIs</li>
+            <li>Storing authentication tokens</li>
+            <li>Reusing common values across multiple requests</li>
+        </ul>
+    </template>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Environment management
+            let environments = [];
+            let currentEnvironment = null;
+            
+            // Load environments from localStorage
+            function loadEnvironments() {
+                const storedEnvironments = localStorage.getItem('antiposta_environments');
+                if (storedEnvironments) {
+                    try {
+                        environments = JSON.parse(storedEnvironments);
+                    } catch (e) {
+                        console.error('Failed to parse stored environments:', e);
+                        environments = [];
+                    }
+                }
+                
+                updateEnvironmentSelector();
+            }
+            
+            // Save environments to localStorage
+            function saveEnvironments() {
+                localStorage.setItem('antiposta_environments', JSON.stringify(environments));
+                updateEnvironmentSelector();
+            }
+            
+            // Update the environment selector dropdown
+            function updateEnvironmentSelector() {
+                const selector = document.getElementById('environment-selector');
+                
+                // Clear existing options except the first one
+                while (selector.options.length > 1) {
+                    selector.remove(1);
+                }
+                
+                // Add environment options
+                environments.forEach(env => {
+                    const option = document.createElement('option');
+                    option.value = env.id;
+                    option.textContent = env.name;
+                    selector.appendChild(option);
+                });
+                
+                // Select the current environment if there is one
+                if (currentEnvironment) {
+                    selector.value = currentEnvironment.id;
+                }
+            }
+            
+            // Environment selector change handler
+            document.getElementById('environment-selector').addEventListener('change', function() {
+                const envId = this.value;
+                
+                if (envId === '') {
+                    currentEnvironment = null;
+                } else {
+                    currentEnvironment = environments.find(env => env.id === envId);
+                }
+                
+                // Save the current environment ID to localStorage
+                localStorage.setItem('antiposta_current_environment', envId);
+            });
+            
+            // Manage environments button
+            document.getElementById('manage-env').addEventListener('click', function() {
+                openEnvironmentModal();
+            });
+            
+            // Close modal button
+            document.getElementById('close-modal').addEventListener('click', function() {
+                document.getElementById('env-modal').style.display = 'none';
+            });
+            
+            // Add environment button
+            document.getElementById('add-env-btn').addEventListener('click', function() {
+                const nameInput = document.getElementById('new-env-name');
+                const name = nameInput.value.trim();
+                
+                if (name === '') {
+                    alert('Please enter an environment name');
+                    return;
+                }
+                
+                // Check for duplicate names
+                if (environments.some(env => env.name === name)) {
+                    alert('An environment with this name already exists');
+                    return;
+                }
+                
+                // Create new environment
+                const newEnv = {
+                    id: Date.now().toString(),
+                    name: name,
+                    variables: []
+                };
+                
+                environments.push(newEnv);
+                saveEnvironments();
+                
+                // Clear input and update UI
+                nameInput.value = '';
+                updateEnvironmentList();
+                selectEnvironment(newEnv.id);
+            });
+            
+            // Delete environment button
+            document.getElementById('delete-env-btn').addEventListener('click', function() {
+                if (!currentEnvironment) {
+                    alert('No environment selected');
+                    return;
+                }
+                
+                if (confirm(`Are you sure you want to delete the environment "${currentEnvironment.name}"?`)) {
+                    // Remove the environment
+                    environments = environments.filter(env => env.id !== currentEnvironment.id);
+                    
+                    // Update current environment
+                    if (environments.length > 0) {
+                        currentEnvironment = environments[0];
+                    } else {
+                        currentEnvironment = null;
+                    }
+                    
+                    saveEnvironments();
+                    updateEnvironmentList();
+                    updateVariablesList();
+                }
+            });
+            
+            // Save environment changes button
+            document.getElementById('save-env-btn').addEventListener('click', function() {
+                if (!currentEnvironment) {
+                    alert('No environment selected');
+                    return;
+                }
+                
+                // Get variables from the UI
+                const variables = [];
+                document.querySelectorAll('#variables-list .key-value-row').forEach(row => {
+                    const key = row.querySelector('.key-input').value.trim();
+                    const value = row.querySelector('.value-input').value.trim();
+                    
+                    if (key) {
+                        variables.push({ key, value });
+                    }
+                });
+                
+                // Update the current environment
+                currentEnvironment.variables = variables;
+                
+                // Save to localStorage
+                saveEnvironments();
+                
+                alert('Environment saved successfully');
+            });
+            
+            // Add variable button
+            document.getElementById('add-variable-btn').addEventListener('click', function() {
+                if (!currentEnvironment) {
+                    alert('Please select or create an environment first');
+                    return;
+                }
+                
+                addVariableRow();
+            });
+            
+            // Update the environment list in the modal
+            function updateEnvironmentList() {
+                const list = document.getElementById('env-list');
+                list.innerHTML = '';
+                
+                environments.forEach(env => {
+                    const item = document.createElement('div');
+                    item.className = 'env-item';
+                    item.dataset.id = env.id;
+                    item.textContent = env.name;
+                    item.style.padding = '8px';
+                    item.style.cursor = 'pointer';
+                    item.style.borderRadius = '4px';
+                    
+                    if (currentEnvironment && env.id === currentEnvironment.id) {
+                        item.style.backgroundColor = 'var(--accent-color)';
+                        item.style.color = 'white';
+                    } else {
+                        item.style.backgroundColor = 'var(--input-bg)';
+                    }
+                    
+                    item.addEventListener('click', function() {
+                        selectEnvironment(env.id);
+                    });
+                    
+                    list.appendChild(item);
+                });
+            }
+            
+            // Select an environment in the modal
+            function selectEnvironment(envId) {
+                currentEnvironment = environments.find(env => env.id === envId);
+                
+                // Update UI
+                document.querySelectorAll('.env-item').forEach(item => {
+                    if (item.dataset.id === envId) {
+                        item.style.backgroundColor = 'var(--accent-color)';
+                        item.style.color = 'white';
+                    } else {
+                        item.style.backgroundColor = 'var(--input-bg)';
+                        item.style.color = 'var(--text-color)';
+                    }
+                });
+                
+                // Update variables list
+                updateVariablesList();
+                
+                // Update environment name display
+                document.getElementById('current-env-name').textContent = 
+                    currentEnvironment ? `Variables for ${currentEnvironment.name}` : 'Variables';
+                
+                // Update delete button state
+                document.getElementById('delete-env-btn').disabled = !currentEnvironment;
+                document.getElementById('save-env-btn').disabled = !currentEnvironment;
+            }
+            
+            // Update the variables list for the current environment
+            function updateVariablesList() {
+                const list = document.getElementById('variables-list');
+                list.innerHTML = '';
+                
+                if (!currentEnvironment) {
+                    return;
+                }
+                
+                if (currentEnvironment.variables.length === 0) {
+                    // Add an empty row
+                    addVariableRow();
+                } else {
+                    // Add rows for each variable
+                    currentEnvironment.variables.forEach(variable => {
+                        addVariableRow(variable.key, variable.value);
+                    });
+                }
+            }
+            
+            // Add a variable row to the variables list
+            function addVariableRow(key = '', value = '') {
+                const list = document.getElementById('variables-list');
+                
+                const row = document.createElement('div');
+                row.className = 'key-value-row';
+                row.innerHTML = `
+                    <input type="text" class="key-input" placeholder="Variable Name" value="${key}">
+                    <input type="text" class="value-input" placeholder="Value" value="${value}">
+                    <button class="delete-row-btn" title="Remove variable">×</button>
+                `;
+                
+                // Add delete handler
+                row.querySelector('.delete-row-btn').addEventListener('click', function() {
+                    // Don't delete if it's the last row
+                    if (list.querySelectorAll('.key-value-row').length <= 1) {
+                        // Clear the inputs instead
+                        row.querySelectorAll('input').forEach(input => input.value = '');
+                    } else {
+                        row.remove();
+                    }
+                });
+                
+                list.appendChild(row);
+            }
+            
+            // Open the environment modal
+            function openEnvironmentModal() {
+                updateEnvironmentList();
+                updateVariablesList();
+                document.getElementById('env-modal').style.display = 'block';
+            }
+            
+            // Variable interpolation function
+            function interpolateVariables(text) {
+                if (!text || !currentEnvironment) {
+                    return text;
+                }
+                
+                // Replace {{variable}} with its value
+                return text.replace(/\{\{([^}]+)\}\}/g, (match, variableName) => {
+                    const variable = currentEnvironment.variables.find(v => v.key === variableName.trim());
+                    return variable ? variable.value : match;
+                });
+            }
+            
+            // Override the send request functionality to include variable interpolation
+            const originalSendRequestHandler = document.querySelector('.send-request').onclick;
+            document.querySelector('.send-request').onclick = function() {
+                // Interpolate variables in the URL
+                const urlInput = document.querySelector('.request-url');
+                const originalUrl = urlInput.value;
+                urlInput.value = interpolateVariables(originalUrl);
+                
+                // Interpolate variables in headers
+                document.querySelectorAll('#headers-list .key-value-row').forEach(row => {
+                    const keyInput = row.querySelector('.key-input');
+                    const valueInput = row.querySelector('.value-input');
+                    
+                    keyInput.value = interpolateVariables(keyInput.value);
+                    valueInput.value = interpolateVariables(valueInput.value);
+                });
+                
+                // Interpolate variables in params
+                document.querySelectorAll('#params-list .key-value-row').forEach(row => {
+                    const keyInput = row.querySelector('.key-input');
+                    const valueInput = row.querySelector('.value-input');
+                    
+                    keyInput.value = interpolateVariables(keyInput.value);
+                    valueInput.value = interpolateVariables(valueInput.value);
+                });
+                
+                // Interpolate variables in body
+                const bodyType = document.querySelector('.body-type').value;
+                
+                if (bodyType === 'json') {
+                    const jsonInput = document.querySelector('.json-input');
+                    jsonInput.value = interpolateVariables(jsonInput.value);
+                } else if (bodyType === 'form') {
+                    document.querySelectorAll('#form-list .key-value-row').forEach(row => {
+                        const keyInput = row.querySelector('.key-input');
+                        const valueInput = row.querySelector('.value-input');
+                        
+                        keyInput.value = interpolateVariables(keyInput.value);
+                        valueInput.value = interpolateVariables(valueInput.value);
+                    });
+                } else if (bodyType === 'text') {
+                    const textInput = document.querySelector('.text-input');
+                    textInput.value = interpolateVariables(textInput.value);
+                }
+                
+                // Call the original handler
+                const method = document.querySelector('.http-method').value;
+                const url = document.querySelector('.request-url').value;
+                
+                if (!url) {
+                    alert('Please enter a URL');
+                    return;
+                }
+                
+                // Get headers from the headers editor
+                const headers = {};
+                document.querySelectorAll('#headers-list .key-value-row').forEach(row => {
+                    const key = row.querySelector('.key-input').value.trim();
+                    const value = row.querySelector('.value-input').value.trim();
+                    if (key) {
+                        headers[key] = value;
+                    }
+                });
+                
+                // Get request body based on selected type
+                let body = null;
+                
+                if (method !== 'GET' && method !== 'HEAD') {
+                    if (bodyType === 'json') {
+                        const jsonText = document.querySelector('.json-input').value.trim();
+                        if (jsonText) {
+                            try {
+                                body = JSON.parse(jsonText);
+                                headers['Content-Type'] = 'application/json';
+                            } catch (e) {
+                                alert('Invalid JSON: ' + e.message);
+                                return;
+                            }
+                        }
+                    } else if (bodyType === 'form') {
+                        const formData = new FormData();
+                        let hasData = false;
+                        
+                        document.querySelectorAll('#form-list .key-value-row').forEach(row => {
+                            const key = row.querySelector('.key-input').value.trim();
+                            const value = row.querySelector('.value-input').value.trim();
+                            if (key) {
+                                formData.append(key, value);
+                                hasData = true;
+                            }
+                        });
+                        
+                        if (hasData) {
+                            body = formData;
+                        }
+                    } else if (bodyType === 'text') {
+                        const textData = document.querySelector('.text-input').value.trim();
+                        if (textData) {
+                            body = textData;
+                            headers['Content-Type'] = 'text/plain';
+                        }
+                    }
+                }
+                
+                // Get URL parameters and append them to the URL
+                const params = new URLSearchParams();
+                let hasParams = false;
+                
+                document.querySelectorAll('#params-list .key-value-row').forEach(row => {
+                    const key = row.querySelector('.key-input').value.trim();
+                    const value = row.querySelector('.value-input').value.trim();
+                    if (key) {
+                        params.append(key, value);
+                        hasParams = true;
+                    }
+                });
+                
+                let finalUrl = url;
+                if (hasParams) {
+                    // Check if URL already has parameters
+                    finalUrl += (url.includes('?') ? '&' : '?') + params.toString();
+                }
+                
+                // Update UI to show loading state
+                document.querySelector('.status').textContent = 'Status: Loading...';
+                document.querySelector('.time').textContent = 'Time: -';
+                document.querySelector('.size').textContent = 'Size: -';
+                document.querySelector('.response-body pre').textContent = 'Loading...';
+                document.querySelector('.response-headers pre').textContent = 'Loading...';
+                
+                const startTime = Date.now();
+                
+                // Prepare fetch options
+                const fetchOptions = {
+                    method: method,
+                    headers: headers,
+                    // Don't add body for GET and HEAD requests
+                    ...(method !== 'GET' && method !== 'HEAD' && body ? { body: bodyType === 'json' ? JSON.stringify(body) : body } : {})
+                };
+                
+                // Make the actual HTTP request
+                fetch(finalUrl, fetchOptions)
+                    .then(response => {
+                        const endTime = Date.now();
+                        const responseTime = endTime - startTime;
+                        
+                        // Update status and time
+                        document.querySelector('.status').textContent = `Status: ${response.status} ${response.statusText}`;
+                        document.querySelector('.time').textContent = `Time: ${responseTime}ms`;
+                        
+                        // Clone the response so we can use it twice
+                        const responseClone = response.clone();
+                        
+                        // Get and display response headers
+                        const headerText = Array.from(response.headers.entries())
+                            .map(([key, value]) => `${key}: ${value}`)
+                            .join('\n');
+                        
+                        document.querySelector('.response-headers pre').textContent = headerText;
+                        
+                        // Try to parse response as JSON first
+                        return responseClone.text().then(text => {
+                            let formattedResponse = text;
+                            let responseSize = new Blob([text]).size;
+                            
+                            // Try to format as JSON if it's JSON
+                            try {
+                                if (response.headers.get('content-type')?.includes('application/json')) {
+                                    formattedResponse = JSON.stringify(JSON.parse(text), null, 2);
+                                }
+                            } catch (e) {
+                                // If it's not valid JSON, just show as text
+                                console.log('Response is not valid JSON:', e);
+                            }
+                            
+                            // Update size and response body
+                            document.querySelector('.size').textContent = `Size: ${formatBytes(responseSize)}`;
+                            document.querySelector('.response-body pre').textContent = formattedResponse;
+                        });
+                    })
+                    .catch(error => {
+                        const endTime = Date.now();
+                        const responseTime = endTime - startTime;
+                        
+                        document.querySelector('.status').textContent = 'Status: Error';
+                        document.querySelector('.time').textContent = `Time: ${responseTime}ms`;
+                        document.querySelector('.size').textContent = 'Size: -';
+                        document.querySelector('.response-body pre').textContent = `Error: ${error.message}`;
+                        document.querySelector('.response-headers pre').textContent = '';
+                    });
+                
+                // Restore original values after sending the request
+                urlInput.value = originalUrl;
+            };
+            
+            // Initialize environments
+            loadEnvironments();
+            
+            // Load the last selected environment
+            const lastEnvId = localStorage.getItem('antiposta_current_environment');
+            if (lastEnvId && lastEnvId !== '') {
+                const env = environments.find(e => e.id === lastEnvId);
+                if (env) {
+                    currentEnvironment = env;
+                    document.getElementById('environment-selector').value = lastEnvId;
+                }
+            }
+            
             // Tab switching functionality
             document.querySelectorAll('.tab-btn').forEach(button => {
                 button.addEventListener('click', function() {
@@ -614,155 +1387,6 @@
                 }
             });
             
-            // Send request button
-            document.querySelector('.send-request').addEventListener('click', function() {
-                const method = document.querySelector('.http-method').value;
-                const url = document.querySelector('.request-url').value;
-                
-                if (!url) {
-                    alert('Please enter a URL');
-                    return;
-                }
-                
-                // Get headers from the headers editor
-                const headers = {};
-                document.querySelectorAll('#headers-list .key-value-row').forEach(row => {
-                    const key = row.querySelector('.key-input').value.trim();
-                    const value = row.querySelector('.value-input').value.trim();
-                    if (key) {
-                        headers[key] = value;
-                    }
-                });
-                
-                // Get request body based on selected type
-                let body = null;
-                const bodyType = document.querySelector('.body-type').value;
-                
-                if (method !== 'GET' && method !== 'HEAD') {
-                    if (bodyType === 'json') {
-                        const jsonText = document.querySelector('.json-input').value.trim();
-                        if (jsonText) {
-                            try {
-                                body = JSON.parse(jsonText);
-                                headers['Content-Type'] = 'application/json';
-                            } catch (e) {
-                                alert('Invalid JSON: ' + e.message);
-                                return;
-                            }
-                        }
-                    } else if (bodyType === 'form') {
-                        const formData = new FormData();
-                        let hasData = false;
-                        
-                        document.querySelectorAll('#form-list .key-value-row').forEach(row => {
-                            const key = row.querySelector('.key-input').value.trim();
-                            const value = row.querySelector('.value-input').value.trim();
-                            if (key) {
-                                formData.append(key, value);
-                                hasData = true;
-                            }
-                        });
-                        
-                        if (hasData) {
-                            body = formData;
-                        }
-                    } else if (bodyType === 'text') {
-                        const textData = document.querySelector('.text-input').value.trim();
-                        if (textData) {
-                            body = textData;
-                            headers['Content-Type'] = 'text/plain';
-                        }
-                    }
-                }
-                
-                // Get URL parameters and append them to the URL
-                const params = new URLSearchParams();
-                let hasParams = false;
-                
-                document.querySelectorAll('#params-list .key-value-row').forEach(row => {
-                    const key = row.querySelector('.key-input').value.trim();
-                    const value = row.querySelector('.value-input').value.trim();
-                    if (key) {
-                        params.append(key, value);
-                        hasParams = true;
-                    }
-                });
-                
-                let finalUrl = url;
-                if (hasParams) {
-                    // Check if URL already has parameters
-                    finalUrl += (url.includes('?') ? '&' : '?') + params.toString();
-                }
-                
-                // Update UI to show loading state
-                document.querySelector('.status').textContent = 'Status: Loading...';
-                document.querySelector('.time').textContent = 'Time: -';
-                document.querySelector('.size').textContent = 'Size: -';
-                document.querySelector('.response-body pre').textContent = 'Loading...';
-                document.querySelector('.response-headers pre').textContent = 'Loading...';
-                
-                const startTime = Date.now();
-                
-                // Prepare fetch options
-                const fetchOptions = {
-                    method: method,
-                    headers: headers,
-                    // Don't add body for GET and HEAD requests
-                    ...(method !== 'GET' && method !== 'HEAD' && body ? { body: bodyType === 'json' ? JSON.stringify(body) : body } : {})
-                };
-                
-                // Make the actual HTTP request
-                fetch(finalUrl, fetchOptions)
-                    .then(response => {
-                        const endTime = Date.now();
-                        const responseTime = endTime - startTime;
-                        
-                        // Update status and time
-                        document.querySelector('.status').textContent = `Status: ${response.status} ${response.statusText}`;
-                        document.querySelector('.time').textContent = `Time: ${responseTime}ms`;
-                        
-                        // Clone the response so we can use it twice
-                        const responseClone = response.clone();
-                        
-                        // Get and display response headers
-                        const headerText = Array.from(response.headers.entries())
-                            .map(([key, value]) => `${key}: ${value}`)
-                            .join('\n');
-                        
-                        document.querySelector('.response-headers pre').textContent = headerText;
-                        
-                        // Try to parse response as JSON first
-                        return responseClone.text().then(text => {
-                            let formattedResponse = text;
-                            let responseSize = new Blob([text]).size;
-                            
-                            // Try to format as JSON if it's JSON
-                            try {
-                                if (response.headers.get('content-type')?.includes('application/json')) {
-                                    formattedResponse = JSON.stringify(JSON.parse(text), null, 2);
-                                }
-                            } catch (e) {
-                                // If it's not valid JSON, just show as text
-                                console.log('Response is not valid JSON:', e);
-                            }
-                            
-                            // Update size and response body
-                            document.querySelector('.size').textContent = `Size: ${formatBytes(responseSize)}`;
-                            document.querySelector('.response-body pre').textContent = formattedResponse;
-                        });
-                    })
-                    .catch(error => {
-                        const endTime = Date.now();
-                        const responseTime = endTime - startTime;
-                        
-                        document.querySelector('.status').textContent = 'Status: Error';
-                        document.querySelector('.time').textContent = `Time: ${responseTime}ms`;
-                        document.querySelector('.size').textContent = 'Size: -';
-                        document.querySelector('.response-body pre').textContent = `Error: ${error.message}`;
-                        document.querySelector('.response-headers pre').textContent = '';
-                    });
-            });
-            
             // Helper function to format bytes
             function formatBytes(bytes, decimals = 2) {
                 if (bytes === 0) return '0 Bytes';
@@ -775,6 +1399,109 @@
                 
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
             }
+
+            // Help system
+            const helpButton = document.getElementById('help-button');
+            const helpOverlay = document.getElementById('help-overlay');
+            const closeHelpButton = document.getElementById('close-help');
+            const helpContent = document.getElementById('help-content');
+            const helpTitle = document.getElementById('help-title');
+            let currentTab = 'headers'; // Default to headers tab
+            
+            // Show help overlay
+            helpButton.addEventListener('click', function() {
+                helpOverlay.style.display = 'block';
+                showContextualHelp();
+            });
+            
+            // Close help overlay
+            closeHelpButton.addEventListener('click', function() {
+                helpOverlay.style.display = 'none';
+            });
+            
+            // Close help when clicking outside the help container
+            helpOverlay.addEventListener('click', function(event) {
+                if (event.target === helpOverlay) {
+                    helpOverlay.style.display = 'none';
+                }
+            });
+            
+            // Handle help topic links
+            document.querySelectorAll('.help-topic-link').forEach(link => {
+                link.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const topic = this.getAttribute('data-topic');
+                    showHelpTopic(topic);
+                    
+                    // Update active topic in sidebar
+                    document.querySelectorAll('.help-topic-link').forEach(l => {
+                        l.style.backgroundColor = 'transparent';
+                    });
+                    this.style.backgroundColor = 'var(--hover-color)';
+                });
+            });
+            
+            // Show contextual help based on current tab
+            function showContextualHelp() {
+                // Find the active tab
+                const activeTabBtn = document.querySelector('.request-tabs .tab-btn.active');
+                if (activeTabBtn) {
+                    const tabName = activeTabBtn.getAttribute('data-tab');
+                    showHelpTopic(tabName);
+                    
+                    // Update active topic in sidebar
+                    document.querySelectorAll('.help-topic-link').forEach(link => {
+                        const topic = link.getAttribute('data-topic');
+                        if (topic === tabName) {
+                            link.style.backgroundColor = 'var(--hover-color)';
+                        } else {
+                            link.style.backgroundColor = 'transparent';
+                        }
+                    });
+                } else {
+                    // Default to general help
+                    showHelpTopic('general');
+                }
+            }
+            
+            // Show help for a specific topic
+            function showHelpTopic(topic) {
+                const template = document.getElementById(`help-${topic}`);
+                
+                if (template) {
+                    helpContent.innerHTML = template.innerHTML;
+                    helpTitle.textContent = `Help: ${topic.charAt(0).toUpperCase() + topic.slice(1)}`;
+                    
+                    // Add event listeners to any help topic links in the content
+                    helpContent.querySelectorAll('.help-topic-link').forEach(link => {
+                        link.addEventListener('click', function(event) {
+                            event.preventDefault();
+                            const linkedTopic = this.getAttribute('data-topic');
+                            showHelpTopic(linkedTopic);
+                            
+                            // Update active topic in sidebar
+                            document.querySelectorAll('.help-topic-link').forEach(l => {
+                                const t = l.getAttribute('data-topic');
+                                if (t === linkedTopic) {
+                                    l.style.backgroundColor = 'var(--hover-color)';
+                                } else {
+                                    l.style.backgroundColor = 'transparent';
+                                }
+                            });
+                        });
+                    });
+                } else {
+                    // Fallback to general help
+                    showHelpTopic('general');
+                }
+            }
+            
+            // Update current tab when tab is changed
+            document.querySelectorAll('.request-tabs .tab-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    currentTab = this.getAttribute('data-tab');
+                });
+            });
         });
     </script>
 </body>
