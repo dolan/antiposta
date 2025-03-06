@@ -73,12 +73,8 @@ Post-response Scripts: Process response data automatically
 Request Validation: Verify responses against expected schemas or values
 
 User Interface
-Dark/Light Themes: Visual preference options
-
 Split View: Simultaneous display of request and response
-
 Tabs Interface: Work with multiple requests simultaneously
-
 Keyboard Shortcuts: Efficiency-focused keyboard navigation
 
 Technical Implementation
@@ -120,11 +116,7 @@ All actions are persisted locally without requiring internet connectivity
 
 Extensibility
 Plugin Architecture: Support for community-developed extensions
-
-Custom Themes: User-definable UI themes
-
 Scripting API: Documented API for automation and extensions
-
 Command Line Interface: Ability to trigger saved requests from terminal
 
 This specification outlines a powerful yet lightweight alternative to cloud-based API testing tools, focusing on developer privacy, local control, and the core functionality needed for effective API testing.

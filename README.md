@@ -70,12 +70,6 @@ cd antiposta
    - Switch environments using the environment selector
    - Variables are automatically replaced when sending requests
 
-### Theme Customization
-
-- Toggle between light and dark themes using:
-  - Theme toggle button in the top-right corner
-  - Keyboard shortcut: `Ctrl/Cmd + Shift + T`
-
 ### Request History
 
 - View recent requests in the History panel
@@ -90,7 +84,6 @@ cd antiposta
 | Close Tab | `Ctrl/Cmd + W` |
 | Send Request | `Ctrl/Cmd + Enter` |
 | Save Request | `Ctrl/Cmd + S` |
-| Toggle Theme | `Ctrl/Cmd + Shift + T` |
 | Toggle Split View | `Ctrl/Cmd + B` |
 | Switch Tabs | `Ctrl/Cmd + 1-9` |
 | Focus URL Bar | `Ctrl/Cmd + L` |
@@ -101,7 +94,6 @@ CurlGUI stores all data locally in your browser:
 - Collections and requests
 - Environment configurations
 - Request history
-- Theme preferences
 - UI state and layout
 
 No data is ever sent to external servers, ensuring complete privacy and control over your API testing data.
