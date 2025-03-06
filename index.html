@@ -1611,11 +1611,11 @@
             });
 
             // Add OAuth2 functionality
-            // Include the OAuth2 client library from CDN
-            const oauthScript = document.createElement('script');
-            oauthScript.src = 'https://cdn.jsdelivr.net/npm/client-oauth2@4.3.3/dist/client-oauth2.min.js';
-            document.head.appendChild(oauthScript);
-
+            // Remove dependency on external library and implement directly
+            const fetchTokenBtn = document.getElementById('fetch-token');
+            const tokenResult = document.getElementById('token-result');
+            const tokenResponse = document.getElementById('token-response');
+            
             // Setup Grant Type Toggle
             const grantTypeSelect = document.getElementById('grant-type');
             const passwordCredentialsDiv = document.getElementById('password-credentials');
@@ -1630,10 +1630,6 @@
             });
 
             // Fetch Token Button
-            const fetchTokenBtn = document.getElementById('fetch-token');
-            const tokenResult = document.getElementById('token-result');
-            const tokenResponse = document.getElementById('token-response');
-            
             fetchTokenBtn.addEventListener('click', async function() {
                 // Get form values
                 const grantType = document.getElementById('grant-type').value;
@@ -1653,9 +1649,11 @@
                 }
                 
                 // Additional validation for password grant
+                let username = '';
+                let password = '';
                 if (grantType === 'password') {
-                    const username = document.getElementById('username').value.trim();
-                    const password = document.getElementById('password').value.trim();
+                    username = document.getElementById('username').value.trim();
+                    password = document.getElementById('password').value.trim();
                     
                     if (!username || !password) {
                         alert('Username and Password are required for Password grant type');
@@ -1667,114 +1665,91 @@
                 fetchTokenBtn.textContent = 'Fetching...';
                 
                 try {
+                    // Prepare request body based on grant type
+                    const formData = new URLSearchParams();
+                    formData.append('grant_type', grantType);
+                    
+                    if (grantType === 'password') {
+                        formData.append('username', username);
+                        formData.append('password', password);
+                    }
+                    
+                    // Create Authorization header with Basic auth
+                    const authHeader = 'Basic ' + btoa(clientId + ':' + clientSecret);
+                    
+                    // Make request to token endpoint
+                    const response = await fetch(tokenUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Authorization': authHeader
+                        },
+                        body: formData
+                    });
+                    
+                    // Parse response
+                    const contentType = response.headers.get('content-type');
                     let token;
                     
-                    // Create OAuth2 client configuration
-                    const clientConfig = {
-                        clientId: clientId,
-                        clientSecret: clientSecret,
-                        accessTokenUri: tokenUrl
-                    };
-                    
-                    if (window.ClientOAuth2) {
-                        const client = new ClientOAuth2(clientConfig);
-                        
-                        if (grantType === 'client_credentials') {
-                            // Use client credentials flow
-                            const requestData = {
-                                body: {
-                                    grant_type: 'client_credentials'
-                                }
-                            };
-                            
-                            // Make request to token endpoint
-                            const response = await fetch(tokenUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                    'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
-                                },
-                                body: new URLSearchParams({
-                                    'grant_type': 'client_credentials'
-                                })
-                            });
-                            
-                            if (!response.ok) {
-                                throw new Error(`Error: ${response.status} ${response.statusText}`);
-                            }
-                            
-                            token = await response.json();
-                        } else if (grantType === 'password') {
-                            // Get username and password
-                            const username = document.getElementById('username').value.trim();
-                            const password = document.getElementById('password').value.trim();
-                            
-                            // Make request to token endpoint with password grant
-                            const response = await fetch(tokenUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                    'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
-                                },
-                                body: new URLSearchParams({
-                                    'grant_type': 'password',
-                                    'username': username,
-                                    'password': password
-                                })
-                            });
-                            
-                            if (!response.ok) {
-                                throw new Error(`Error: ${response.status} ${response.statusText}`);
-                            }
-                            
-                            token = await response.json();
-                        }
-                        
-                        // Show token result
-                        tokenResult.style.display = 'block';
-                        tokenResponse.textContent = JSON.stringify(token, null, 2);
-                        
-                        // Add the access token to the headers
-                        const accessToken = token.access_token;
-                        if (accessToken) {
-                            // Check if Authorization header already exists
-                            let authHeaderExists = false;
-                            const headersList = document.getElementById('headers-list');
-                            const headerRows = headersList.querySelectorAll('.key-value-row');
-                            
-                            for (const row of headerRows) {
-                                const keyInput = row.querySelector('.key-input');
-                                if (keyInput.value.toLowerCase() === 'authorization') {
-                                    const valueInput = row.querySelector('.value-input');
-                                    valueInput.value = `Bearer ${accessToken}`;
-                                    authHeaderExists = true;
-                                    break;
-                                }
-                            }
-                            
-                            // If no Authorization header exists, add a new one
-                            if (!authHeaderExists) {
-                                // Find the Add Header button and click it
-                                const addHeaderBtn = document.getElementById('add-header-btn');
-                                addHeaderBtn.click();
-                                
-                                // Get the newly added row
-                                const newRow = headersList.lastElementChild;
-                                const keyInput = newRow.querySelector('.key-input');
-                                const valueInput = newRow.querySelector('.value-input');
-                                
-                                keyInput.value = 'Authorization';
-                                valueInput.value = `Bearer ${accessToken}`;
-                            }
-                            
-                            // Switch to Headers tab
-                            const headersTab = document.querySelector('.request-tabs .tab-btn[data-tab="headers"]');
-                            headersTab.click();
-                            
-                            alert('Access token added to headers as Bearer token!');
-                        }
+                    if (contentType && contentType.includes('application/json')) {
+                        token = await response.json();
                     } else {
-                        throw new Error('OAuth library not loaded. Please try again.');
+                        // Handle non-JSON responses
+                        const text = await response.text();
+                        try {
+                            token = JSON.parse(text);
+                        } catch (e) {
+                            // If it's not JSON, create a simple object with the text
+                            token = { response: text };
+                        }
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error(`Error: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    // Show token result
+                    tokenResult.style.display = 'block';
+                    tokenResponse.textContent = JSON.stringify(token, null, 2);
+                    
+                    // Add the access token to the headers
+                    const accessToken = token.access_token;
+                    if (accessToken) {
+                        // Check if Authorization header already exists
+                        let authHeaderExists = false;
+                        const headersList = document.getElementById('headers-list');
+                        const headerRows = headersList.querySelectorAll('.key-value-row');
+                        
+                        for (const row of headerRows) {
+                            const keyInput = row.querySelector('.key-input');
+                            if (keyInput.value.toLowerCase() === 'authorization') {
+                                const valueInput = row.querySelector('.value-input');
+                                valueInput.value = `Bearer ${accessToken}`;
+                                authHeaderExists = true;
+                                break;
+                            }
+                        }
+                        
+                        // If no Authorization header exists, add a new one
+                        if (!authHeaderExists) {
+                            // Find the Add Header button and click it
+                            const addHeaderBtn = document.getElementById('add-header-btn');
+                            addHeaderBtn.click();
+                            
+                            // Get the newly added row
+                            const newRow = headersList.lastElementChild;
+                            const keyInput = newRow.querySelector('.key-input');
+                            const valueInput = newRow.querySelector('.value-input');
+                            
+                            keyInput.value = 'Authorization';
+                            valueInput.value = `Bearer ${accessToken}`;
+                        }
+                        
+                        // Switch to Headers tab
+                        const headersTab = document.querySelector('.request-tabs .tab-btn[data-tab="headers"]');
+                        headersTab.click();
+                        
+                        alert('Access token added to headers as Bearer token!');
                     }
                 } catch (error) {
                     console.error('Error fetching token:', error);
