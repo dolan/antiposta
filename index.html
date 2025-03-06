@@ -486,8 +486,54 @@
                             </div>
                         </div>
                         <div class="auth-tab tab-pane">
-                            <!-- Auth content will be implemented later -->
-                            <p>Authentication options will be available here.</p>
+                            <!-- OAuth2 Authentication -->
+                            <div id="oauth2-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                                <h3>OAuth2 Authentication</h3>
+                                
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <label for="grant-type" style="width: 120px;">Grant Type:</label>
+                                    <select id="grant-type" style="flex: 1; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.5rem;">
+                                        <option value="client_credentials">Client Credentials</option>
+                                        <option value="password">Password</option>
+                                    </select>
+                                </div>
+                                
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <label for="token-url" style="width: 120px;">Token URL:</label>
+                                    <input type="text" id="token-url" placeholder="https://example.com/oauth/token" style="flex: 1; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.5rem;">
+                                </div>
+                                
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <label for="client-id" style="width: 120px;">Client ID:</label>
+                                    <input type="text" id="client-id" placeholder="client_id" style="flex: 1; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.5rem;">
+                                </div>
+                                
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <label for="client-secret" style="width: 120px;">Client Secret:</label>
+                                    <input type="password" id="client-secret" placeholder="client_secret" style="flex: 1; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.5rem;">
+                                </div>
+                                
+                                <div id="password-credentials" style="display: none; flex-direction: column; gap: 0.5rem;">
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <label for="username" style="width: 120px;">Username:</label>
+                                        <input type="text" id="username" placeholder="username" style="flex: 1; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.5rem;">
+                                    </div>
+                                    
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <label for="password" style="width: 120px;">Password:</label>
+                                        <input type="password" id="password" placeholder="password" style="flex: 1; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.5rem;">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <button id="fetch-token" style="background: var(--button-bg); color: var(--button-text); border: none; border-radius: 4px; padding: 0.5rem 1rem; cursor: pointer;">Fetch Token</button>
+                                </div>
+                                
+                                <div id="token-result" style="margin-top: 1rem; display: none;">
+                                    <h4>Token Result</h4>
+                                    <pre id="token-response" style="background: var(--input-bg); padding: 0.5rem; border-radius: 4px; overflow: auto; max-height: 150px;"></pre>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1531,6 +1577,182 @@
                 button.addEventListener('click', function() {
                     currentTab = this.getAttribute('data-tab');
                 });
+            });
+
+            // Add OAuth2 functionality
+            // Include the OAuth2 client library from CDN
+            const oauthScript = document.createElement('script');
+            oauthScript.src = 'https://cdn.jsdelivr.net/npm/client-oauth2@4.3.3/dist/client-oauth2.min.js';
+            document.head.appendChild(oauthScript);
+
+            // Setup Grant Type Toggle
+            const grantTypeSelect = document.getElementById('grant-type');
+            const passwordCredentialsDiv = document.getElementById('password-credentials');
+            
+            // Show/hide password fields based on grant type
+            grantTypeSelect.addEventListener('change', function() {
+                if (this.value === 'password') {
+                    passwordCredentialsDiv.style.display = 'flex';
+                } else {
+                    passwordCredentialsDiv.style.display = 'none';
+                }
+            });
+
+            // Fetch Token Button
+            const fetchTokenBtn = document.getElementById('fetch-token');
+            const tokenResult = document.getElementById('token-result');
+            const tokenResponse = document.getElementById('token-response');
+            
+            fetchTokenBtn.addEventListener('click', async function() {
+                // Get form values
+                const grantType = document.getElementById('grant-type').value;
+                const tokenUrl = document.getElementById('token-url').value.trim();
+                const clientId = document.getElementById('client-id').value.trim();
+                const clientSecret = document.getElementById('client-secret').value.trim();
+                
+                // Validate inputs
+                if (!tokenUrl) {
+                    alert('Please enter a token URL');
+                    return;
+                }
+                
+                if (!clientId || !clientSecret) {
+                    alert('Client ID and Client Secret are required');
+                    return;
+                }
+                
+                // Additional validation for password grant
+                if (grantType === 'password') {
+                    const username = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value.trim();
+                    
+                    if (!username || !password) {
+                        alert('Username and Password are required for Password grant type');
+                        return;
+                    }
+                }
+                
+                fetchTokenBtn.disabled = true;
+                fetchTokenBtn.textContent = 'Fetching...';
+                
+                try {
+                    let token;
+                    
+                    // Create OAuth2 client configuration
+                    const clientConfig = {
+                        clientId: clientId,
+                        clientSecret: clientSecret,
+                        accessTokenUri: tokenUrl
+                    };
+                    
+                    if (window.ClientOAuth2) {
+                        const client = new ClientOAuth2(clientConfig);
+                        
+                        if (grantType === 'client_credentials') {
+                            // Use client credentials flow
+                            const requestData = {
+                                body: {
+                                    grant_type: 'client_credentials'
+                                }
+                            };
+                            
+                            // Make request to token endpoint
+                            const response = await fetch(tokenUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
+                                },
+                                body: new URLSearchParams({
+                                    'grant_type': 'client_credentials'
+                                })
+                            });
+                            
+                            if (!response.ok) {
+                                throw new Error(`Error: ${response.status} ${response.statusText}`);
+                            }
+                            
+                            token = await response.json();
+                        } else if (grantType === 'password') {
+                            // Get username and password
+                            const username = document.getElementById('username').value.trim();
+                            const password = document.getElementById('password').value.trim();
+                            
+                            // Make request to token endpoint with password grant
+                            const response = await fetch(tokenUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
+                                },
+                                body: new URLSearchParams({
+                                    'grant_type': 'password',
+                                    'username': username,
+                                    'password': password
+                                })
+                            });
+                            
+                            if (!response.ok) {
+                                throw new Error(`Error: ${response.status} ${response.statusText}`);
+                            }
+                            
+                            token = await response.json();
+                        }
+                        
+                        // Show token result
+                        tokenResult.style.display = 'block';
+                        tokenResponse.textContent = JSON.stringify(token, null, 2);
+                        
+                        // Add the access token to the headers
+                        const accessToken = token.access_token;
+                        if (accessToken) {
+                            // Check if Authorization header already exists
+                            let authHeaderExists = false;
+                            const headersList = document.getElementById('headers-list');
+                            const headerRows = headersList.querySelectorAll('.key-value-row');
+                            
+                            for (const row of headerRows) {
+                                const keyInput = row.querySelector('.key-input');
+                                if (keyInput.value.toLowerCase() === 'authorization') {
+                                    const valueInput = row.querySelector('.value-input');
+                                    valueInput.value = `Bearer ${accessToken}`;
+                                    authHeaderExists = true;
+                                    break;
+                                }
+                            }
+                            
+                            // If no Authorization header exists, add a new one
+                            if (!authHeaderExists) {
+                                // Find the Add Header button and click it
+                                const addHeaderBtn = document.getElementById('add-header-btn');
+                                addHeaderBtn.click();
+                                
+                                // Get the newly added row
+                                const newRow = headersList.lastElementChild;
+                                const keyInput = newRow.querySelector('.key-input');
+                                const valueInput = newRow.querySelector('.value-input');
+                                
+                                keyInput.value = 'Authorization';
+                                valueInput.value = `Bearer ${accessToken}`;
+                            }
+                            
+                            // Switch to Headers tab
+                            const headersTab = document.querySelector('.request-tabs .tab-btn[data-tab="headers"]');
+                            headersTab.click();
+                            
+                            alert('Access token added to headers as Bearer token!');
+                        }
+                    } else {
+                        throw new Error('OAuth library not loaded. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error fetching token:', error);
+                    tokenResult.style.display = 'block';
+                    tokenResponse.textContent = `Error: ${error.message}`;
+                } finally {
+                    fetchTokenBtn.disabled = false;
+                    fetchTokenBtn.textContent = 'Fetch Token';
+                }
             });
         });
     </script>
