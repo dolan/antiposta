@@ -349,6 +349,33 @@
         button:hover {
             background: var(--button-hover);
         }
+
+        /* Help content styling */
+        #help-content ul {
+            padding-left: 2rem;
+            margin: 1rem 0;
+            list-style-type: disc;
+        }
+
+        #help-content ol {
+            padding-left: 2rem;
+            margin: 1rem 0;
+        }
+
+        #help-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Keep the help topics sidebar without indentation */
+        #help-topics {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #help-topics li {
+            margin-bottom: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -547,7 +574,7 @@
             <div style="display: flex; height: 100%;">
                 <div style="width: 200px; background-color: var(--bg-secondary); border-right: 1px solid var(--border-color); padding: 1rem; overflow-y: auto;">
                     <h3 style="margin-top: 0; color: var(--text-color);">Topics</h3>
-                    <ul id="help-topics" style="list-style: none; padding: 0; margin: 0;">
+                    <ul id="help-topics">
                         <li><a href="#general" class="help-topic-link" data-topic="general" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">General</a></li>
                         <li><a href="#request-url" class="help-topic-link" data-topic="request-url" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Request URL</a></li>
                         <li><a href="#headers" class="help-topic-link" data-topic="headers" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Headers</a></li>
