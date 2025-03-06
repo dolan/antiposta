@@ -1753,8 +1753,29 @@
                     }
                 } catch (error) {
                     console.error('Error fetching token:', error);
+                    
+                    // Display the error in the token result area
                     tokenResult.style.display = 'block';
-                    tokenResponse.textContent = `Error: ${error.message}`;
+                    
+                    // Check if it's a CORS error
+                    if (error.message === 'Failed to fetch' || 
+                        error.message.includes('NetworkError') || 
+                        error.message.includes('CORS')) {
+                        
+                        const corsErrorMessage = `CORS Error: The request was blocked by the browser due to Cross-Origin Resource Sharing (CORS) policy restrictions.
+
+Possible solutions:
+1. The API server needs to include appropriate CORS headers (Access-Control-Allow-Origin)
+2. Use a CORS proxy for testing purposes
+3. If this is your own API, configure it to allow requests from this origin
+4. For local testing, you might need to disable CORS in your browser (not recommended for regular browsing)
+
+Technical details: ${error.message}`;
+                        
+                        tokenResponse.textContent = corsErrorMessage;
+                    } else {
+                        tokenResponse.textContent = `Error: ${error.message}`;
+                    }
                 } finally {
                     fetchTokenBtn.disabled = false;
                     fetchTokenBtn.textContent = 'Fetch Token';
