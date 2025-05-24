@@ -155,6 +155,20 @@
             background: var(--button-hover);
         }
 
+        .copy-curl-btn {
+            background: var(--bg-secondary);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .copy-curl-btn:hover {
+            background: var(--hover-color);
+        }
+
         /* Tabs */
         .request-tabs {
             display: flex;
@@ -451,6 +465,7 @@
                     </select>
                     <input type="text" class="request-url" placeholder="Enter request URL">
                     <button class="send-request">Send</button>
+                    <button class="copy-curl-btn" title="Copy as cURL command">📋 cURL</button>
                 </div>
 
                 <div class="request-tabs">
@@ -660,6 +675,8 @@
                         <li><a href="#auth" class="help-topic-link" data-topic="auth" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Authentication</a></li>
                         <li><a href="#response" class="help-topic-link" data-topic="response" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Response</a></li>
                         <li><a href="#environments" class="help-topic-link" data-topic="environments" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">Environments</a></li>
+                        <li><a href="#curl" class="help-topic-link" data-topic="curl" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">cURL Export</a></li>
+                        <li><a href="#history" class="help-topic-link" data-topic="history" style="color: var(--accent-color); text-decoration: none; display: block; padding: 8px; border-radius: 4px;">History</a></li>
                     </ul>
                 </div>
                 <div id="help-content" style="flex: 1; padding: 1rem; overflow-y: auto;">
@@ -691,6 +708,17 @@
             <li>Send different types of request bodies (JSON, form data, text)</li>
             <li>View formatted responses</li>
             <li>Use environments to store and reuse variables</li>
+            <li>Export requests as cURL commands</li>
+            <li>Automatic request history</li>
+        </ul>
+        
+        <h3>Keyboard Shortcuts</h3>
+        <ul>
+            <li><strong>Ctrl/Cmd + Enter</strong>: Send request</li>
+            <li><strong>Ctrl/Cmd + L</strong>: Focus URL bar</li>
+            <li><strong>Ctrl/Cmd + K</strong>: Copy as cURL</li>
+            <li><strong>F1</strong>: Show help</li>
+            <li><strong>Escape</strong>: Close modals</li>
         </ul>
         
         <p>Click on a topic in the sidebar to learn more about specific features.</p>
@@ -871,11 +899,103 @@
         </ul>
     </template>
 
+    <template id="help-curl">
+        <h2>cURL Export</h2>
+        <p>Antiposta can generate cURL commands from your requests, making it easy to share requests or use them in scripts.</p>
+        
+        <h3>Using cURL Export</h3>
+        <ol>
+            <li>Configure your request (URL, method, headers, body, etc.)</li>
+            <li>Click the "📋 cURL" button next to the Send button</li>
+            <li>The cURL command will be automatically copied to your clipboard</li>
+            <li>Paste it into your terminal or scripts</li>
+        </ol>
+        
+        <h3>Keyboard Shortcut</h3>
+        <p>You can also use <strong>Ctrl/Cmd + K</strong> to quickly copy the current request as a cURL command.</p>
+        
+        <h3>What's Included</h3>
+        <p>The generated cURL command includes:</p>
+        <ul>
+            <li>HTTP method (-X flag)</li>
+            <li>All headers (-H flags)</li>
+            <li>URL parameters (appended to URL)</li>
+            <li>Request body (-d flag for JSON, form data, or text)</li>
+            <li>Environment variables are resolved to their actual values</li>
+        </ul>
+        
+        <h3>Example Output</h3>
+        <pre>curl -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer token123" \
+  -d '{"name": "John", "email": "john@example.com"}' \
+  "https://api.example.com/users"</pre>
+        
+        <h3>Tips</h3>
+        <ul>
+            <li>Environment variables are automatically replaced with their values</li>
+            <li>Use this feature to document API calls in your projects</li>
+            <li>Perfect for sharing requests with team members</li>
+            <li>Great for converting GUI requests to automation scripts</li>
+        </ul>
+    </template>
+
+    <template id="help-history">
+        <h2>Request History</h2>
+        <p>Antiposta automatically saves your recent requests, making it easy to repeat or modify previous API calls.</p>
+        
+        <h3>How It Works</h3>
+        <ul>
+            <li>Every successful request is automatically saved to history</li>
+            <li>History is stored locally in your browser</li>
+            <li>The 20 most recent requests are kept</li>
+            <li>Duplicate requests (same method + URL) are merged</li>
+        </ul>
+        
+        <h3>Using History</h3>
+        <ol>
+            <li>Look for the "History" panel in the left sidebar</li>
+            <li>Click on any history item to load that request</li>
+            <li>All request details are restored: headers, parameters, body, etc.</li>
+            <li>Make any needed modifications and send again</li>
+        </ol>
+        
+        <h3>History Information</h3>
+        <p>Each history item shows:</p>
+        <ul>
+            <li><strong>HTTP Method</strong>: GET, POST, etc.</li>
+            <li><strong>URL</strong>: The request endpoint</li>
+            <li><strong>Timestamp</strong>: When the request was made</li>
+        </ul>
+        
+        <h3>What's Saved</h3>
+        <p>The complete request is saved including:</p>
+        <ul>
+            <li>HTTP method and URL</li>
+            <li>All headers</li>
+            <li>URL parameters</li>
+            <li>Request body (JSON, form data, or text)</li>
+            <li>Body type selection</li>
+        </ul>
+        
+        <h3>Privacy</h3>
+        <ul>
+            <li>History is stored locally in your browser only</li>
+            <li>No data is sent to external servers</li>
+            <li>History persists between browser sessions</li>
+            <li>You can clear history by clearing browser data</li>
+        </ul>
+    </template>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Environment management
             let environments = [];
             let currentEnvironment = null;
+            
+            // Request history management
+            let requestHistory = [];
+            const MAX_HISTORY_ITEMS = 20;
             
             // Load environments from localStorage
             function loadEnvironments() {
@@ -890,6 +1010,160 @@
                 }
                 
                 updateEnvironmentSelector();
+            }
+            
+            // Load request history from localStorage
+            function loadRequestHistory() {
+                const storedHistory = localStorage.getItem('antiposta_request_history');
+                if (storedHistory) {
+                    try {
+                        requestHistory = JSON.parse(storedHistory);
+                    } catch (e) {
+                        console.error('Failed to parse stored history:', e);
+                        requestHistory = [];
+                    }
+                }
+                
+                updateHistoryDisplay();
+            }
+            
+            // Save request history to localStorage
+            function saveRequestHistory() {
+                localStorage.setItem('antiposta_request_history', JSON.stringify(requestHistory));
+                updateHistoryDisplay();
+            }
+            
+            // Add a request to history
+            function addToHistory(method, url, headers, params, body, bodyType) {
+                const historyItem = {
+                    id: Date.now(),
+                    timestamp: new Date().toISOString(),
+                    method: method,
+                    url: url,
+                    headers: headers,
+                    params: params,
+                    body: body,
+                    bodyType: bodyType,
+                    name: `${method} ${url}`.substring(0, 50) + (url.length > 40 ? '...' : '')
+                };
+                
+                // Remove duplicate URLs with same method
+                requestHistory = requestHistory.filter(item => 
+                    !(item.method === method && item.url === url)
+                );
+                
+                // Add to beginning of array
+                requestHistory.unshift(historyItem);
+                
+                // Limit history size
+                if (requestHistory.length > MAX_HISTORY_ITEMS) {
+                    requestHistory = requestHistory.slice(0, MAX_HISTORY_ITEMS);
+                }
+                
+                saveRequestHistory();
+            }
+            
+            // Load a request from history
+            function loadFromHistory(historyId) {
+                const historyItem = requestHistory.find(item => item.id === historyId);
+                if (!historyItem) return;
+                
+                // Set method and URL
+                document.querySelector('.http-method').value = historyItem.method;
+                document.querySelector('.request-url').value = historyItem.url;
+                
+                // Clear and set headers
+                const headersList = document.getElementById('headers-list');
+                headersList.innerHTML = '';
+                historyItem.headers.forEach(header => {
+                    addKeyValueRow(headersList);
+                    const lastRow = headersList.lastElementChild;
+                    lastRow.querySelector('.key-input').value = header.key;
+                    lastRow.querySelector('.value-input').value = header.value;
+                });
+                if (headersList.children.length === 0) {
+                    addKeyValueRow(headersList);
+                }
+                
+                // Clear and set params
+                const paramsList = document.getElementById('params-list');
+                paramsList.innerHTML = '';
+                historyItem.params.forEach(param => {
+                    addKeyValueRow(paramsList);
+                    const lastRow = paramsList.lastElementChild;
+                    lastRow.querySelector('.key-input').value = param.key;
+                    lastRow.querySelector('.value-input').value = param.value;
+                });
+                if (paramsList.children.length === 0) {
+                    addKeyValueRow(paramsList);
+                }
+                
+                // Set body type and content
+                document.querySelector('.body-type').value = historyItem.bodyType || 'none';
+                document.querySelector('.body-type').dispatchEvent(new Event('change'));
+                
+                if (historyItem.bodyType === 'json') {
+                    document.querySelector('.json-input').value = historyItem.body || '';
+                } else if (historyItem.bodyType === 'text') {
+                    document.querySelector('.text-input').value = historyItem.body || '';
+                } else if (historyItem.bodyType === 'form' && historyItem.body) {
+                    const formList = document.getElementById('form-list');
+                    formList.innerHTML = '';
+                    historyItem.body.forEach(formField => {
+                        addKeyValueRow(formList);
+                        const lastRow = formList.lastElementChild;
+                        lastRow.querySelector('.key-input').value = formField.key;
+                        lastRow.querySelector('.value-input').value = formField.value;
+                    });
+                    if (formList.children.length === 0) {
+                        addKeyValueRow(formList);
+                    }
+                }
+            }
+            
+            // Update history display in sidebar
+            function updateHistoryDisplay() {
+                const historyContainer = document.getElementById('request-history');
+                historyContainer.innerHTML = '';
+                
+                if (requestHistory.length === 0) {
+                    historyContainer.innerHTML = '<p style="color: var(--disabled-color); font-style: italic;">No recent requests</p>';
+                    return;
+                }
+                
+                requestHistory.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.style.cssText = `
+                        padding: 8px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        margin-bottom: 4px;
+                        background: var(--input-bg);
+                        border: 1px solid var(--border-color);
+                        transition: background-color 0.2s ease;
+                    `;
+                    
+                    historyItem.innerHTML = `
+                        <div style="font-weight: bold; font-size: 0.9rem; color: var(--accent-color);">${item.method}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.url}</div>
+                        <div style="font-size: 0.7rem; color: var(--disabled-color);">${new Date(item.timestamp).toLocaleString()}</div>
+                    `;
+                    
+                    historyItem.addEventListener('click', function() {
+                        loadFromHistory(item.id);
+                    });
+                    
+                    historyItem.addEventListener('mouseenter', function() {
+                        this.style.backgroundColor = 'var(--hover-color)';
+                    });
+                    
+                    historyItem.addEventListener('mouseleave', function() {
+                        this.style.backgroundColor = 'var(--input-bg)';
+                    });
+                    
+                    historyContainer.appendChild(historyItem);
+                });
             }
             
             // Save environments to localStorage
@@ -1160,6 +1434,97 @@
                 });
             }
             
+            // Generate cURL command from current request
+            function generateCurlCommand() {
+                const method = document.querySelector('.http-method').value;
+                let url = interpolateVariables(document.querySelector('.request-url').value);
+                
+                if (!url) {
+                    alert('Please enter a URL');
+                    return null;
+                }
+                
+                // Get headers
+                const headers = {};
+                document.querySelectorAll('#headers-list .key-value-row').forEach(row => {
+                    const key = interpolateVariables(row.querySelector('.key-input').value.trim());
+                    const value = interpolateVariables(row.querySelector('.value-input').value.trim());
+                    if (key) {
+                        headers[key] = value;
+                    }
+                });
+                
+                // Get URL parameters
+                const params = new URLSearchParams();
+                let hasParams = false;
+                
+                document.querySelectorAll('#params-list .key-value-row').forEach(row => {
+                    const key = interpolateVariables(row.querySelector('.key-input').value.trim());
+                    const value = interpolateVariables(row.querySelector('.value-input').value.trim());
+                    if (key) {
+                        params.append(key, value);
+                        hasParams = true;
+                    }
+                });
+                
+                // Append parameters to URL
+                if (hasParams) {
+                    url += (url.includes('?') ? '&' : '?') + params.toString();
+                }
+                
+                // Start building curl command
+                let curlCommand = `curl -X ${method}`;
+                
+                // Add headers
+                Object.entries(headers).forEach(([key, value]) => {
+                    curlCommand += ` \\\n  -H "${key}: ${value}"`;
+                });
+                
+                // Handle request body
+                const bodyType = document.querySelector('.body-type').value;
+                if (method !== 'GET' && method !== 'HEAD' && bodyType !== 'none') {
+                    if (bodyType === 'json') {
+                        const jsonText = interpolateVariables(document.querySelector('.json-input').value.trim());
+                        if (jsonText) {
+                            try {
+                                // Validate JSON
+                                JSON.parse(jsonText);
+                                curlCommand += ` \\\n  -H "Content-Type: application/json"`;
+                                curlCommand += ` \\\n  -d '${jsonText}'`;
+                            } catch (e) {
+                                alert('Invalid JSON: ' + e.message);
+                                return null;
+                            }
+                        }
+                    } else if (bodyType === 'form') {
+                        const formParams = [];
+                        document.querySelectorAll('#form-list .key-value-row').forEach(row => {
+                            const key = interpolateVariables(row.querySelector('.key-input').value.trim());
+                            const value = interpolateVariables(row.querySelector('.value-input').value.trim());
+                            if (key) {
+                                formParams.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+                            }
+                        });
+                        
+                        if (formParams.length > 0) {
+                            curlCommand += ` \\\n  -H "Content-Type: application/x-www-form-urlencoded"`;
+                            curlCommand += ` \\\n  -d "${formParams.join('&')}"`;
+                        }
+                    } else if (bodyType === 'text') {
+                        const textData = interpolateVariables(document.querySelector('.text-input').value.trim());
+                        if (textData) {
+                            curlCommand += ` \\\n  -H "Content-Type: text/plain"`;
+                            curlCommand += ` \\\n  -d '${textData}'`;
+                        }
+                    }
+                }
+                
+                // Add URL (always last)
+                curlCommand += ` \\\n  "${url}"`;
+                
+                return curlCommand;
+            }
+            
             // Override the send request functionality to include variable interpolation
             const originalSendRequestHandler = document.querySelector('.send-request').onclick;
             document.querySelector('.send-request').onclick = function() {
@@ -1338,6 +1703,41 @@
                             // Update size and response body
                             document.querySelector('.size').textContent = `Size: ${formatBytes(responseSize)}`;
                             document.querySelector('.response-body pre').textContent = formattedResponse;
+                            
+                            // Save to history after successful request
+                            const historyHeaders = [];
+                            Object.entries(headers).forEach(([key, value]) => {
+                                if (key && value) {
+                                    historyHeaders.push({ key, value });
+                                }
+                            });
+                            
+                            const historyParams = [];
+                            document.querySelectorAll('#params-list .key-value-row').forEach(row => {
+                                const key = row.querySelector('.key-input').value.trim();
+                                const value = row.querySelector('.value-input').value.trim();
+                                if (key) {
+                                    historyParams.push({ key, value });
+                                }
+                            });
+                            
+                            let historyBody = null;
+                            if (bodyType === 'json') {
+                                historyBody = document.querySelector('.json-input').value.trim();
+                            } else if (bodyType === 'text') {
+                                historyBody = document.querySelector('.text-input').value.trim();
+                            } else if (bodyType === 'form') {
+                                historyBody = [];
+                                document.querySelectorAll('#form-list .key-value-row').forEach(row => {
+                                    const key = row.querySelector('.key-input').value.trim();
+                                    const value = row.querySelector('.value-input').value.trim();
+                                    if (key) {
+                                        historyBody.push({ key, value });
+                                    }
+                                });
+                            }
+                            
+                            addToHistory(method, originalUrl, historyHeaders, historyParams, historyBody, bodyType);
                         });
                     })
                     .catch(error => {
@@ -1355,8 +1755,9 @@
                 urlInput.value = originalUrl;
             };
             
-            // Initialize environments
+            // Initialize environments and history
             loadEnvironments();
+            loadRequestHistory();
             
             // Load the last selected environment
             const lastEnvId = localStorage.getItem('antiposta_current_environment');
@@ -1608,6 +2009,110 @@
                 button.addEventListener('click', function() {
                     currentTab = this.getAttribute('data-tab');
                 });
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Ctrl/Cmd + Enter: Send request
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    document.querySelector('.send-request').click();
+                }
+                
+                // Ctrl/Cmd + L: Focus URL bar
+                if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                    e.preventDefault();
+                    document.querySelector('.request-url').focus();
+                    document.querySelector('.request-url').select();
+                }
+                
+                // Ctrl/Cmd + K: Copy as cURL
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    document.querySelector('.copy-curl-btn').click();
+                }
+                
+                // F1: Show help
+                if (e.key === 'F1') {
+                    e.preventDefault();
+                    document.getElementById('help-button').click();
+                }
+                
+                // Escape: Close modals
+                if (e.key === 'Escape') {
+                    // Close help overlay
+                    const helpOverlay = document.getElementById('help-overlay');
+                    if (helpOverlay.style.display === 'block') {
+                        helpOverlay.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Close environment modal
+                    const envModal = document.getElementById('env-modal');
+                    if (envModal.style.display === 'block') {
+                        envModal.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Close any cURL modal
+                    const curlModal = document.querySelector('[style*="z-index: 3000"]');
+                    if (curlModal) {
+                        curlModal.remove();
+                    }
+                }
+            });
+
+            // cURL Export functionality
+            document.querySelector('.copy-curl-btn').addEventListener('click', function() {
+                const curlCommand = generateCurlCommand();
+                if (curlCommand) {
+                    // Copy to clipboard
+                    navigator.clipboard.writeText(curlCommand).then(function() {
+                        // Visual feedback
+                        const originalText = document.querySelector('.copy-curl-btn').textContent;
+                        document.querySelector('.copy-curl-btn').textContent = '✅ Copied!';
+                        document.querySelector('.copy-curl-btn').style.background = 'var(--success-color)';
+                        
+                        setTimeout(function() {
+                            document.querySelector('.copy-curl-btn').textContent = originalText;
+                            document.querySelector('.copy-curl-btn').style.background = 'var(--bg-secondary)';
+                        }, 2000);
+                    }).catch(function(err) {
+                        // Fallback for older browsers
+                        console.error('Could not copy text: ', err);
+                        
+                        // Create a modal to show the cURL command
+                        const modal = document.createElement('div');
+                        modal.style.cssText = `
+                            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                            background-color: rgba(0,0,0,0.7); z-index: 3000;
+                            display: flex; align-items: center; justify-content: center;
+                        `;
+                        
+                        const content = document.createElement('div');
+                        content.style.cssText = `
+                            background: var(--panel-bg); padding: 2rem; border-radius: 8px;
+                            max-width: 80%; max-height: 80%; overflow: auto;
+                            border: 1px solid var(--border-color);
+                        `;
+                        
+                        content.innerHTML = `
+                            <h3 style="margin-bottom: 1rem; color: var(--text-color);">cURL Command</h3>
+                            <pre style="background: var(--input-bg); padding: 1rem; border-radius: 4px; overflow: auto; color: var(--text-color); white-space: pre-wrap;">${curlCommand}</pre>
+                            <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 1rem; background: var(--button-bg); color: var(--button-text); border: none; border-radius: 4px; padding: 0.5rem 1rem; cursor: pointer;">Close</button>
+                        `;
+                        
+                        modal.appendChild(content);
+                        document.body.appendChild(modal);
+                        
+                        // Close modal when clicking outside
+                        modal.addEventListener('click', function(e) {
+                            if (e.target === modal) {
+                                modal.remove();
+                            }
+                        });
+                    });
+                }
             });
 
             // Add OAuth2 functionality
