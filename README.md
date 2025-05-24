@@ -28,35 +28,16 @@ cd antiposta
 
 ### Making Requests
 
-1. Create a new request tab using:
-   - The '+' button in the tab bar
-   - Keyboard shortcut: `Ctrl/Cmd + T`
-
-2. Configure your request:
+1. Configure your request:
    - Select HTTP method (GET, POST, PUT, etc.)
    - Enter the request URL
    - Add headers, parameters, or body data using the respective tabs
    - Click 'Send' or press `Ctrl/Cmd + Enter` to execute
 
-### Working with Tabs
-
-- **Create New Tab**: `Ctrl/Cmd + T`
-- **Close Current Tab**: `Ctrl/Cmd + W`
-- **Switch Between Tabs**: Click on tab or use `Ctrl/Cmd + 1-9`
-- **Toggle Split View**: `Ctrl/Cmd + B` or click the split view button
-
-### Managing Collections
-
-1. Use the Collections panel in the sidebar to:
-   - Create new collections
-   - Organize requests into folders
-   - Import/export collections
-   - Share collections with team members
-
-2. Save requests to collections:
-   - Click 'Save' in the request panel
-   - Choose an existing collection or create a new one
-   - Add a name and description for your request
+2. Export as cURL:
+   - Click the '📋 cURL' button or press `Ctrl/Cmd + K`
+   - The command is automatically copied to your clipboard
+   - Perfect for sharing requests or using in scripts
 
 ### Environment Management
 
@@ -72,29 +53,28 @@ cd antiposta
 
 ### Request History
 
-- View recent requests in the History panel
-- Click any history item to restore the request
+- Every successful request is automatically saved to history
+- View recent requests in the History panel in the sidebar
+- Click any history item to restore the complete request
 - History is stored locally and persists between sessions
+- The 20 most recent requests are kept
 
 ## Keyboard Shortcuts
 
 | Action | Shortcut |
 |--------|----------|
-| New Tab | `Ctrl/Cmd + T` |
-| Close Tab | `Ctrl/Cmd + W` |
 | Send Request | `Ctrl/Cmd + Enter` |
-| Save Request | `Ctrl/Cmd + S` |
-| Toggle Split View | `Ctrl/Cmd + B` |
-| Switch Tabs | `Ctrl/Cmd + 1-9` |
 | Focus URL Bar | `Ctrl/Cmd + L` |
+| Copy as cURL | `Ctrl/Cmd + K` |
+| Show Help | `F1` |
+| Close Modals | `Escape` |
 
 ## Local Storage
 
-CurlGUI stores all data locally in your browser:
-- Collections and requests
-- Environment configurations
-- Request history
-- UI state and layout
+Antiposta stores all data locally in your browser:
+- Environment configurations and variables
+- Request history (20 most recent requests)
+- UI preferences
 
 No data is ever sent to external servers, ensuring complete privacy and control over your API testing data.
 
@@ -221,4 +201,56 @@ The server will respond with details about your request, including:
 - Timestamp
 - Server name
 
-This makes it easy to verify that your Antiposta client is correctly sending the request as intended. 
+This makes it easy to verify that your Antiposta client is correctly sending the request as intended.
+
+---
+
+<details>
+<summary><strong>📋 Changelog</strong> <em>(click to expand)</em></summary>
+
+## Recent Updates
+
+### v1.1.0 - Productivity Boost (Latest)
+*Focus: Essential workflow features for daily use*
+
+**🎯 New Features:**
+- **cURL Export**: Generate cURL commands from any request
+  - Click the '📋 cURL' button or press `Ctrl/Cmd + K`
+  - Automatic clipboard copy with visual feedback
+  - Includes all headers, parameters, body, and resolved environment variables
+- **Keyboard Shortcuts**: Speed up your workflow
+  - `Ctrl/Cmd + Enter` - Send request
+  - `Ctrl/Cmd + L` - Focus and select URL bar
+  - `Ctrl/Cmd + K` - Copy as cURL command
+  - `F1` - Show help
+  - `Escape` - Close any open modal
+- **Automatic Request History**: Never lose a working request
+  - Every successful request automatically saved
+  - Click any history item to restore complete request state
+  - Smart deduplication (same method + URL)
+  - 20 most recent requests kept locally
+
+**📚 Documentation:**
+- Enhanced help system with new topics for cURL export and history
+- Updated keyboard shortcuts in help overlay
+- Contextual help that adapts to current tab
+
+### v1.0.0 - Initial Release
+*Focus: Core API testing with environment support*
+
+**🏗️ Core Features:**
+- Full HTTP method support (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)
+- Request configuration: headers, URL parameters, request body (JSON, form data, text)
+- Response viewing with automatic JSON formatting
+- Environment variable system with `{{variable}}` syntax
+- OAuth2 authentication support (client credentials and password flows)
+- Comprehensive help system
+- Dark theme UI optimized for developer workflows
+
+**🔒 Privacy & Local Control:**
+- 100% local operation - no data sent to external servers
+- No login required - start testing immediately
+- All data stored in browser localStorage
+- Complete control over your API testing environment
+
+</details> 
